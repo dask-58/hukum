@@ -16,7 +16,12 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
   }, [isSignedIn, isLoaded, router])
 
   if (!isLoaded) {
-    return <div>Please wait loading...</div>
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+        <p>Please wait, loading...</p>
+      </div>
+    )
   }
 
   return (

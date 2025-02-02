@@ -4,9 +4,11 @@ import { SignIn } from "@clerk/nextjs"
 
 export default function SignInPage() {
   return (
-    <div className="flex justify-center items-center min-h-screen">
-      <SignIn routing="hash" redirectUrl="/dashboard" />
+    <div className="flex justify-center items-center min-h-screen bg-black">
+      <SignIn
+        routing="hash"
+        redirectUrl="/dashboard"
+      />
     </div>
   )
 }
-
