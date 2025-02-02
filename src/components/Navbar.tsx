@@ -1,21 +1,23 @@
-'use client';
+"use client"
 
-import React, { useRef, useState, useEffect } from "react";
-import { gsap } from "gsap";
-import Link from "next/link";
+import { useRef, useState, useEffect } from "react"
+import { gsap } from "gsap"
+import Link from "next/link"
+import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs"
+import { SignInButton } from "@/components/SignInButton"
 
 const Navbar = () => {
   const [position, setPosition] = useState({
     left: 0,
     width: 0,
     opacity: 0,
-  });
+  })
 
-  const cursorRef = useRef<HTMLLIElement>(null);
+  const cursorRef = useRef<HTMLLIElement>(null)
 
   useEffect(() => {
-    gsap.set(cursorRef.current, { opacity: 0 });
-  }, []);
+    gsap.set(cursorRef.current, { opacity: 0 })
+  }, [])
 
   return (
     <nav className="bg-muted text-foreground py-5 shadow-md">
@@ -40,43 +42,69 @@ const Navbar = () => {
           transform: translateZ(0);
         }
       `}</style>
-      <div className="max-w-7xl mx-auto flex justify-center">
+      <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
         <div className="relative rounded-full p-[2px] overflow-hidden group transition-all duration-300">
-          <div className="rotating-border absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300" />
+          <div
+            className="rotating-border absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"
+          />
           <ul
             onMouseLeave={() => {
-              gsap.to(cursorRef.current, { opacity: 0, duration: 0.3 });
+              gsap.to(cursorRef.current, { opacity: 0, duration: 0.3 })
             }}
             className="relative flex w-fit rounded-full border-2 border-transparent group-hover:border-white bg-muted p-1"
           >
-            <Tab setPosition={setPosition} href="/">Home</Tab>
-            <Tab setPosition={setPosition} href="/team">Team</Tab>
+            <Tab setPosition={setPosition} href="/">
+              Home
+            </Tab>
+            <Tab setPosition={setPosition} href="/team">
+              Team
+            </Tab>
+            <SignedIn>
+              <Tab setPosition={setPosition} href="/dashboard">
+                Dashboard
+              </Tab>
+            </SignedIn>
             <Cursor position={position} cursorRef={cursorRef} />
           </ul>
         </div>
+        <div className="flex items-center space-x-4">
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <SignedOut>
+            <SignInButton />
+          </SignedOut>
+        </div>
       </div>
     </nav>
-  );
-};
+  )
+}
 
-// Tab component (unchanged)
-const Tab = ({ children, setPosition, href }: { children: string, setPosition: any, href: string }) => {
-  const ref = useRef<HTMLLIElement>(null);
+const Tab = ({
+  children,
+  setPosition,
+  href,
+}: {
+  children: string
+  setPosition: any
+  href: string
+}) => {
+  const ref = useRef<HTMLLIElement>(null)
 
   const handleMouseEnter = () => {
-    if (!ref?.current) return;
-    const { width } = ref.current.getBoundingClientRect();
+    if (!ref?.current) return
+    const { width } = ref.current.getBoundingClientRect()
     setPosition({
       left: ref.current.offsetLeft,
       width,
       opacity: 1,
-    });
-    gsap.to(ref.current, { color: "#000", duration: 0.1 });
-  };
+    })
+    gsap.to(ref.current, { color: "#000", duration: 0.1 })
+  }
 
   const handleMouseLeave = () => {
-    gsap.to(ref.current, { color: "#fff", duration: 0.3 });
-  };
+    gsap.to(ref.current, { color: "#fff", duration: 0.3 })
+  }
 
   return (
     <li
@@ -87,26 +115,32 @@ const Tab = ({ children, setPosition, href }: { children: string, setPosition: a
     >
       <Link href={href}>{children}</Link>
     </li>
-  );
-};
+  )
+}
 
-// Cursor component (unchanged)
-const Cursor = ({ position, cursorRef }: { position: { left: number, width: number, opacity: number }, cursorRef: any }) => {
+const Cursor = ({
+  position,
+  cursorRef,
+}: {
+  position: { left: number; width: number; opacity: number }
+  cursorRef: any
+}) => {
   useEffect(() => {
     gsap.to(cursorRef.current, {
       left: position.left,
       width: position.width,
       opacity: position.opacity,
       duration: 0.3,
-    });
-  }, [position]);
+    })
+  }, [position, cursorRef])
 
   return (
     <li
       ref={cursorRef}
+      style={{ pointerEvents: "none" }}
       className="absolute z-0 h-12 rounded-full bg-accent transition-all duration-300"
     />
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar

@@ -2,18 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import { Upload, Flame, LogIn } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { FileUpload } from "@/components/FileUpload";
-import { Login } from "@/components/Login";
 
 export default function Home() {
-  // const router = useRouter();
   const titleRef = useRef(null);
   const uploadBtnRef = useRef(null);
   const teamBtnRef = useRef(null);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
 
   useEffect(() => {
@@ -80,17 +76,6 @@ export default function Home() {
             <span className="font-medium">Upload Images</span>
           </Button>
           <FileUpload isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
-          <Button 
-            ref={teamBtnRef}
-            variant="secondary"
-            size="lg"
-            className="flex items-center gap-3 px-6 py-3 transition-all duration-2000 bg-gray-800 hover:bg-gradient-to-r hover:from-purple-600 hover:to-blue-500 text-white"
-            onClick={() => setIsLoginOpen(true)}
-          >
-            <LogIn className="w-5 h-5" />
-            <span className="font-medium">Login / Sign Up</span>
-          </Button>
-          <Login isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />
         </div>
       </main>
     </div>
