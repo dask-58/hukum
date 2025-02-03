@@ -56,8 +56,8 @@ const Navbar = () => {
             <Tab setPosition={setPosition} href="/">
               Home
             </Tab>
-            <Tab setPosition={setPosition} href="/team">
-              Team
+            <Tab setPosition={setPosition} href="/about-us">
+              About
             </Tab>
             <SignedIn>
               <Tab setPosition={setPosition} href="/dashboard">
@@ -76,7 +76,6 @@ const Navbar = () => {
           </SignedOut>
         </div>
       </div>
-      {/* Breadcrumb for smaller screens */}
       <div className="sm:hidden mt-2">
         <Link href="/">Home</Link> &gt; <Link href="/team">Team</Link>
         <SignedIn>
