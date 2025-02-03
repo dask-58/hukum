@@ -29,6 +29,13 @@ const attendanceData = [
     class: "CS301 - Software Engineering",
     status: "Absent",
     time: "11:00 AM",
+  },
+  {
+    id: 3,
+    date: "2025-02-11",
+    class: "CS301 - Software Engineering",
+    status: "Present",
+    time: "11:00 AM",
   }
 ]
 
