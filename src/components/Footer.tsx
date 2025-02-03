@@ -1,6 +1,6 @@
 "use client"
 
-import { Github } from "lucide-react"
+import { Github, Mail } from "lucide-react"
 import Link from "next/link"
 
 export function Footer() {
@@ -23,22 +23,20 @@ export function Footer() {
           
           <nav className="flex items-center space-x-6">
             <Link 
-              href="/about" 
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              About
-            </Link>
-            <Link 
-              href="/privacy" 
-              className="text-sm text-gray-400 hover:text-white transition-colors"
-            >
-              Privacy
-            </Link>
-            <Link 
               href="/terms" 
               className="text-sm text-gray-400 hover:text-white transition-colors"
             >
-              Terms
+              <span className="flex items-center">
+                Terms & License
+              </span>
+            </Link>
+            <Link 
+              href="mailto:barghavabhilash@gmail.com" 
+              className="text-sm text-gray-400 hover:text-white transition-colors"
+            >
+              <span className="flex items-center">
+                <Mail className="h-5 w-5" />
+              </span>
             </Link>
           </nav>
         </div>
