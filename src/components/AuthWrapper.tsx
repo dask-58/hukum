@@ -17,11 +17,14 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
 
   if (!isLoaded) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Please wait, loading...</p>
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+        <div className="relative w-16 h-16">
+          <div className="absolute inset-0 rounded-full border-4 border-t-transparent border-blue-500 animate-spin"></div>
+          <div className="absolute inset-2 rounded-full border-4 border-t-transparent border-gray-600 animate-spin-slow"></div>
+        </div>
+        <p className="mt-4 text-lg font-semibold animate-pulse">Loading, please wait...</p>
       </div>
-    )
+    );
   }
 
   return (
@@ -31,4 +34,3 @@ export default function AuthWrapper({ children }: { children: React.ReactNode })
     </>
   )
 }
-
