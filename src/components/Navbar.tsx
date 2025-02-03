@@ -42,7 +42,7 @@ const Navbar = () => {
           transform: translateZ(0);
         }
       `}</style>
-      <div className="max-w-7xl mx-auto flex justify-between items-center px-4">
+      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4">
         <div className="relative rounded-full p-[2px] overflow-hidden group transition-all duration-300">
           <div
             className="rotating-border absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"
@@ -75,6 +75,13 @@ const Navbar = () => {
             <SignInButton />
           </SignedOut>
         </div>
+      </div>
+      {/* Breadcrumb for smaller screens */}
+      <div className="sm:hidden mt-2">
+        <Link href="/">Home</Link> &gt; <Link href="/team">Team</Link>
+        <SignedIn>
+          &gt; <Link href="/dashboard">Dashboard</Link>
+        </SignedIn>
       </div>
     </nav>
   )
