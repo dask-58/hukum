@@ -1,151 +1,114 @@
-"use client"
-
-import { useRef, useState, useEffect } from "react"
-import { gsap } from "gsap"
-import Link from "next/link"
+'use client'
+import { useState } from "react"
+import { Menu, X } from "lucide-react"
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs"
-import { SignInButton } from "@/components/SignInButton"
+import Link from "next/link"
+import { Button } from "./ui/button"
 
 const Navbar = () => {
-  const [position, setPosition] = useState({
-    left: 0,
-    width: 0,
-    opacity: 0,
-  })
+  const [isOpen, setIsOpen] = useState(false)
 
-  const cursorRef = useRef<HTMLLIElement>(null)
+  const toggleMenu = () => setIsOpen(!isOpen)
 
-  useEffect(() => {
-    gsap.set(cursorRef.current, { opacity: 0 })
-  }, [])
-
-  return (
-    <nav className="bg-muted text-foreground py-5 shadow-md">
-      <style>{`
-        @keyframes border-rotate {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
-        }
-        .rotating-border {
-          animation: border-rotate 4s linear infinite;
-          background: conic-gradient(
-            from 0deg at 50% 50%,
-            #ff0000 0%,
-            #ff00ff 15%,
-            #0000ff 35%,
-            #00ffff 50%,
-            #00ff00 65%,
-            #ffff00 85%,
-            #ff0000 100%
-          );
-          backface-visibility: hidden;
-          transform: translateZ(0);
-        }
-      `}</style>
-      <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center px-4">
-        <div className="relative rounded-full p-[2px] overflow-hidden group transition-all duration-300">
-          <div
-            className="rotating-border absolute inset-0 opacity-100 group-hover:opacity-0 transition-opacity duration-300 pointer-events-none"
-          />
-          <ul
-            onMouseLeave={() => {
-              gsap.to(cursorRef.current, { opacity: 0, duration: 0.3 })
-            }}
-            className="relative flex w-fit rounded-full border-2 border-transparent group-hover:border-white bg-muted p-1"
-          >
-            <Tab setPosition={setPosition} href="/">
-              Home
-            </Tab>
-            <Tab setPosition={setPosition} href="/about-us">
-              About
-            </Tab>
-            <SignedIn>
-              <Tab setPosition={setPosition} href="/dashboard">
-                Dashboard
-              </Tab>
-            </SignedIn>
-            <Cursor position={position} cursorRef={cursorRef} />
-          </ul>
-        </div>
-        <div className="flex items-center space-x-4">
-          <SignedIn>
-            <UserButton afterSignOutUrl="/" />
-          </SignedIn>
-          <SignedOut>
-            <SignInButton />
-          </SignedOut>
-        </div>
-      </div>
-      <div className="sm:hidden mt-2">
-        <Link href="/">Home</Link> &gt; <Link href="/team">Team</Link>
-        <SignedIn>
-          &gt; <Link href="/dashboard">Dashboard</Link>
-        </SignedIn>
-      </div>
-    </nav>
-  )
-}
-
-const Tab = ({
-  children,
-  setPosition,
-  href,
-}: {
-  children: string
-  setPosition: any
-  href: string
-}) => {
-  const ref = useRef<HTMLLIElement>(null)
-
-  const handleMouseEnter = () => {
-    if (!ref?.current) return
-    const { width } = ref.current.getBoundingClientRect()
-    setPosition({
-      left: ref.current.offsetLeft,
-      width,
-      opacity: 1,
-    })
-    gsap.to(ref.current, { color: "#000", duration: 0.1 })
-  }
-
-  const handleMouseLeave = () => {
-    gsap.to(ref.current, { color: "#fff", duration: 0.3 })
-  }
-
-  return (
-    <li
-      ref={ref}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="relative z-10 block cursor-pointer px-5 py-3 text-base font-medium uppercase text-white hover:text-muted transition-colors duration-300"
+  const NavLink = ({ href, children }: { href: string; children: React.ReactNode }) => (
+    <Link
+      href={href}
+      className="relative text-sm font-medium group"
+      onClick={() => setIsOpen(false)}
     >
-      <Link href={href}>{children}</Link>
-    </li>
+      {children}
+      <span className="absolute -bottom-1 left-0 w-0 h-px bg-white transition-all duration-300 group-hover:w-full" />
+    </Link>
   )
-}
-
-const Cursor = ({
-  position,
-  cursorRef,
-}: {
-  position: { left: number; width: number; opacity: number }
-  cursorRef: any
-}) => {
-  useEffect(() => {
-    gsap.to(cursorRef.current, {
-      left: position.left,
-      width: position.width,
-      opacity: position.opacity,
-      duration: 0.3,
-    })
-  }, [position, cursorRef])
 
   return (
-    <li
-      ref={cursorRef}
-      style={{ pointerEvents: "none" }}
-      className="absolute z-0 h-12 rounded-full bg-accent transition-all duration-300"
-    />
+    <nav className="sticky top-0 z-50 w-full glass-card backdrop-blur-md border-b border-white/10">
+      <div className="px-4 md:px-6 mx-auto">
+        <div className="flex h-16 items-center justify-between">
+          <div className="flex items-center">
+            <Link 
+              href="/" 
+              className="text-lg font-semibold bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent hover:to-white/80 transition-all duration-300"
+            >
+              hukum
+            </Link>
+          </div>
+
+          <div className="hidden md:flex md:items-center md:space-x-8">
+            <div className="flex items-center space-x-6">
+              <NavLink href="/">Home</NavLink>
+              <NavLink href="/about-us">About</NavLink>
+              <SignedIn>
+                <NavLink href="/dashboard">Dashboard</NavLink>
+              </SignedIn>
+            </div>
+            <div className="flex items-center space-x-2 before:w-px before:h-6 before:bg-white/10 before:mr-2">
+              <SignedIn>
+                <UserButton 
+                  afterSignOutUrl="/"
+                  appearance={{
+                    elements: {
+                      avatarBox: "w-9 h-9 rounded-full border-2 border-white/10 hover:border-white/20 transition-all duration-300 hover:scale-105"
+                    }
+                  }}
+                />
+              </SignedIn>
+              <SignedOut>
+                <Button
+                  variant="secondary"
+                  className="bg-white/5 hover:bg-white/10 border-0 transition-all duration-300 hover:scale-105"
+                  asChild
+                >
+                  <Link href="/sign-in">Sign In</Link>
+                </Button>
+              </SignedOut>
+            </div>
+          </div>
+
+          <button
+            onClick={toggleMenu}
+            className="inline-flex items-center justify-center p-2 rounded-md text-white md:hidden hover:bg-white/5 transition-all duration-300"
+          >
+            {isOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </button>
+        </div>
+      </div>
+
+      {isOpen && (
+        <div className="md:hidden border-t border-white/10 animate-fade-in">
+          <div className="px-2 pt-2 pb-3 space-y-1">
+            <div className="flex flex-col space-y-3 px-4 py-4">
+              <NavLink href="/">Home</NavLink>
+              <NavLink href="/about-us">About</NavLink>
+              <SignedIn>
+                <NavLink href="/dashboard">Dashboard</NavLink>
+              </SignedIn>
+              <div className="pt-2 border-t border-white/10">
+                <SignedIn>
+                  <div className="flex items-center space-x-3">
+                    <UserButton afterSignOutUrl="/" />
+                    <span className="text-sm text-white/60">Account</span>
+                  </div>
+                </SignedIn>
+                <SignedOut>
+                  <Button
+                    variant="secondary"
+                    className="w-full bg-white/5 hover:bg-white/10 border-0 transition-all duration-300"
+                    asChild
+                  >
+                    <Link href="/sign-in">Sign In</Link>
+                  </Button>
+                </SignedOut>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </nav>
   )
 }
 

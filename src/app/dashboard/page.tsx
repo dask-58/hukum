@@ -177,105 +177,140 @@ export default function DashboardPage() {
 
   const getStatusBadge = (status: string) => {
     const variants: { [key: string]: string } = {
-      Present: "bg-green-100 text-green-800 hover:bg-green-200",
-      Absent: "bg-red-100 text-red-800 hover:bg-red-200",
-      Holiday: "bg-yellow-100 text-yellow-800 hover:bg-yellow-200",
+      Present: "bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30",
+      Absent: "bg-red-500/20 text-red-200 hover:bg-red-500/30",
+      Holiday: "bg-amber-500/20 text-amber-200 hover:bg-amber-500/30",
+      "No Class": "bg-gray-500/20 text-gray-200 hover:bg-gray-500/30"
     }
-    return variants[status] || "bg-gray-100 text-gray-800"
-  }  
+    return variants[status] || "bg-gray-500/20 text-gray-200"
+  }
 
   return (
     <TooltipProvider>
-      <main className="max-w-[75rem] w-full mx-auto p-4 space-y-6">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-5xl font-bold text-gray-800">Welcome, { user?.fullName }</h1>
+      <main className="max-w-[75rem] w-full mx-auto p-6 space-y-8">
+        <div className="fade-in">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
+            Welcome, {user?.fullName || 'Guest'}
+          </h1>
+          <p className="text-gray-400">Track your class attendance</p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card>
+
+        <div className="stats-grid fade-in">
+          <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
                 Overall Attendance
                 <Tooltip>
-                  <TooltipTrigger><InfoIcon className="h-4 w-4" /></TooltipTrigger>
+                  <TooltipTrigger><InfoIcon className="h-4 w-4 text-gray-400" /></TooltipTrigger>
                   <TooltipContent>
-                    <p>Calculated based on {attendanceData.length} recorded classes</p>
+                    <p>Based on {attendanceData.length} classes</p>
                   </TooltipContent>
                 </Tooltip>
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold">{overallStats.percentage.toFixed(1)}%</div>
-              <div className="text-sm text-gray-500">
-                {overallStats.present} attended / {overallStats.total} total classes
+              <div className="text-4xl font-bold text-white mb-2">
+                {overallStats.percentage.toFixed(1)}%
               </div>
-              <Progress value={overallStats.percentage} className="h-2 mt-2" />
+              <div className="text-sm text-gray-400">
+                {overallStats.present} attended / {overallStats.total} total
+              </div>
+              <Progress 
+                value={overallStats.percentage} 
+                className="h-2 mt-4 bg-white/[0.1]" 
+              />
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg">Monthly Overview</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-7 gap-1">
+              <div className="grid grid-cols-7 gap-1.5">
                 {monthlyOverview.map((day, index) => (
                   <div 
                     key={index}
-                    className={`h-6 w-6 text-xs flex items-center justify-center rounded-sm 
-                      ${day.isWeekend ? 'bg-yellow-100' : 
-                       day.present > 0 ? 'bg-green-100' : 
-                       day.absent > 0 ? 'bg-red-100' : 'bg-gray-100'}`}
+                    className={`calendar-day ${
+                      day.isWeekend ? 'bg-amber-500/20 text-amber-200' :
+                      day.present > 0 ? 'bg-emerald-500/20 text-emerald-200' :
+                      day.absent > 0 ? 'bg-red-500/20 text-red-200' :
+                      'bg-gray-500/20 text-gray-400'
+                    }`}
                   >
                     {format(day.date, 'd')}
                   </div>
                 ))}
               </div>
-              <div className="mt-3 flex gap-2 text-xs">
-                <div className="flex items-center"><div className="h-3 w-3 bg-green-100 mr-1" /> Present</div>
-                <div className="flex items-center"><div className="h-3 w-3 bg-red-100 mr-1" /> Absent</div>
-                <div className="flex items-center"><div className="h-3 w-3 bg-yellow-100 mr-1" /> Holiday</div>
+              <div className="mt-4 flex gap-4 text-xs">
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-emerald-500/20 mr-2" />
+                  <span className="text-gray-300">Present</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-red-500/20 mr-2" />
+                  <span className="text-gray-300">Absent</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="h-3 w-3 rounded-full bg-amber-500/20 mr-2" />
+                  <span className="text-gray-300">Holiday</span>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg">Course Statistics</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               {classStats.map((stat, index) => (
                 <div key={index}>
-                  <div className="flex justify-between text-sm mb-1">
-                    <span className="truncate max-w-[120px]">{stat.className}</span>
-                    <span>{stat.percentage.toFixed(1)}%</span>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-gray-300 truncate max-w-[120px]">
+                      {stat.className}
+                    </span>
+                    <span className="text-white">
+                      {stat.percentage.toFixed(1)}%
+                    </span>
                   </div>
-                  <Progress value={stat.percentage} className="h-2" />
+                  <Progress 
+                    value={stat.percentage} 
+                    className="h-2 bg-white/[0.1]" 
+                  />
                 </div>
               ))}
             </CardContent>
           </Card>
         </div>
 
-        <Card>
+        <Card className="glass-card fade-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
               <CardTitle>Attendance Records</CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-400">
                 {showAllData ? 
                   "Showing all records for the month" : 
                   `Showing records for ${date ? format(date, 'MMM dd, yyyy') : 'selected date'}`}
               </CardDescription>
             </div>
-            <Button variant="outline" onClick={exportToCSV}>
+            <Button 
+              variant="outline" 
+              onClick={exportToCSV}
+              className="border-white/10 hover:bg-white/5"
+            >
               <DownloadIcon className="mr-2 h-4 w-4" />
               Export CSV
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-4 mb-4">
+            <div className="flex flex-wrap gap-4 mb-6">
               <Popover>
-              <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="w-[240px] justify-start text-left font-normal border-white/10 hover:bg-white/5"
+                  >
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {date ? format(date, "PPP") : <span>Choose date</span>}
                   </Button>
@@ -289,12 +324,13 @@ export default function DashboardPage() {
                       setShowAllData(false)
                     }}
                     initialFocus
+                    className="rounded-md border-white/10"
                   />
                 </PopoverContent>
               </Popover>
 
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-[150px] border-white/10">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -308,41 +344,53 @@ export default function DashboardPage() {
               <Button
                 variant={showAllData ? "default" : "outline"}
                 onClick={() => setShowAllData(!showAllData)}
+                className={showAllData ? "" : "border-white/10 hover:bg-white/5"}
               >
                 {showAllData ? "Show Single Day" : "Show Full Month"}
               </Button>
             </div>
 
-            <div className="rounded-md border overflow-x-auto">
+            <div className="rounded-lg border border-white/10 overflow-hidden">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Time</TableHead>
-                    <TableHead>Class</TableHead>
-                    <TableHead>Status</TableHead>
+                  <TableRow className="border-white/10 hover:bg-white/[0.02]">
+                    <TableHead className="text-gray-300">Date</TableHead>
+                    <TableHead className="text-gray-300">Time</TableHead>
+                    <TableHead className="text-gray-300">Class</TableHead>
+                    <TableHead className="text-gray-300">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredData.map((dayData) =>
                     dayData.classes.map((record, index) => (
-                      <TableRow key={`${dayData.date}-${record.class}`}>
+                      <TableRow 
+                        key={`${dayData.date}-${record.class}`}
+                        className="border-white/10 hover:bg-white/[0.02]"
+                      >
                         {index === 0 && (
-                          <TableCell rowSpan={dayData.classes.length}>
+                          <TableCell 
+                            rowSpan={dayData.classes.length}
+                            className="text-gray-300"
+                          >
                             {format(new Date(dayData.date), "EEE, MMM d")}
                           </TableCell>
                         )}
-                        <TableCell>{record.time}</TableCell>
-                        <TableCell className="font-medium">{record.class}</TableCell>
+                        <TableCell className="text-gray-300">{record.time}</TableCell>
+                        <TableCell className="font-medium text-white">{record.class}</TableCell>
                         <TableCell>
-                          <Badge className={getStatusBadge(record.status)}>{record.status}</Badge>
+                          <Badge className={getStatusBadge(record.status)}>
+                            {record.status}
+                          </Badge>
                         </TableCell>
                       </TableRow>
                     ))
                   )}
                   {filteredData.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center h-24">
+                      <TableCell 
+                        colSpan={4} 
+                        className="h-32 text-center text-gray-400"
+                      >
                         No records found
                       </TableCell>
                     </TableRow>
@@ -353,18 +401,18 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-50">
+        <Card className="glass-card fade-in">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
-              <InfoIcon className="h-5 w-5" />
+              <InfoIcon className="h-5 w-5 text-gray-400" />
               Data Transparency
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            <p>• Weekend days (Saturday and Sunday) are automatically marked as holidays</p>
-            <p>• "No Class" indicates no scheduled class for that course on that day</p>
-            <p>• Sample data used for demonstration purposes</p>
-            <p>• Attendance percentage calculated based on recorded classes only</p>
+          <CardContent className="space-y-2">
+            <p className="text-gray-400">• Weekend days (Saturday and Sunday) are automatically marked as holidays</p>
+            <p className="text-gray-400">• "No Class" indicates no scheduled class for that course on that day</p>
+            <p className="text-gray-400">• Sample data used for demonstration purposes</p>
+            <p className="text-gray-400">• Attendance percentage calculated based on recorded classes only</p>
           </CardContent>
         </Card>
       </main>

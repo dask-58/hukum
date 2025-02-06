@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { IBM_Plex_Sans, IBM_Plex_Mono } from "next/font/google";
+import { Quicksand } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,17 +8,11 @@ import "./globals.css";
 import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
 
-const ibmSans = IBM_Plex_Sans({
+const quicksand = Quicksand({
   subsets: ["latin"],
-  weight: ["400", "700"],
-  variable: "--font-ibm-sans",
+  weight: ["300", "400", "500", "700"],
+  variable: "--font-quicksand",
 });
-
-// const ibmMono = IBM_Plex_Mono({
-//   subsets: ["latin"],
-//   weight: ["400"],
-//   variable: "--font-ibm-mono",
-// });
 
 export const metadata: Metadata = {
   title: "HUKUM | Next-Gen Face Recognition",
@@ -41,9 +35,8 @@ export const metadata: Metadata = {
     siteName: "HUKUM",
     locale: "en_US",
     type: "website",
-  }
+  },
 };
-
 
 export default function RootLayout({
   children,
@@ -54,7 +47,7 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
-        <body className={`${ibmSans.className} antialiased`}>
+        <body className={`${quicksand.className} antialiased`}>
           <AuthWrapper>
             <Navbar />
             <main>{children}</main>

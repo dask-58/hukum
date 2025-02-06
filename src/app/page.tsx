@@ -1,83 +1,139 @@
 "use client"
 
-import { Button } from "@/components/ui/button";
-import { Upload, Flame, LogIn } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
-import gsap from "gsap";
-import { FileUpload } from "@/components/FileUpload";
+import { useEffect, useRef } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowRight, Bot, Shield, Zap } from "lucide-react"
+import gsap from "gsap"
+import Link from "next/link"
 
 export default function Home() {
-  const titleRef = useRef(null);
-  const uploadBtnRef = useRef(null);
-  const teamBtnRef = useRef(null);
-  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  const titleRef = useRef(null)
+  const heroRef = useRef(null)
+  const cardsRef = useRef<HTMLDivElement | null>(null)
+  const ctaRef = useRef(null)
 
   useEffect(() => {
-    gsap.set("#theGradient", { attr: { x1: -1000, x2: 0 } });
+    gsap.set("#theGradient", { attr: { x1: -1000, x2: 0 } })
     gsap.to("#theGradient", {
       duration: 3,
       attr: { x1: 1000, x2: 2000 },
-      repeat: 0,
+      repeat: -1,
       yoyo: true,
       repeatDelay: 0.5,
       ease: "none"
-    });
+    })
 
-    gsap.fromTo(uploadBtnRef.current, 
-      { x: "-100%", opacity: 0 }, 
-      {
-        x: 0, 
-        opacity: 1, 
-        duration: 1, 
-        ease: "power2.out",
-        delay: 0.3
-      }
-    );
+    const tl = gsap.timeline()
 
-    gsap.fromTo(teamBtnRef.current, 
-      { x: "100%", opacity: 0 }, 
-      {
-        x: 0, 
-        opacity: 1, 
-        duration: 1, 
-        ease: "power2.out",
-        delay: 0.6
-      }
-    );
-  }, []);
+    tl.fromTo(heroRef.current,
+      { y: 50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 1, ease: "power3.out" }
+    )
+
+    const cards = cardsRef.current?.children
+    if (cards) {
+      tl.fromTo(cards,
+        { y: 100, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 0.8,
+          stagger: 0.2,
+          ease: "power2.out"
+        },
+        "-=0.5"
+      )
+    }
+
+    tl.fromTo(ctaRef.current,
+      { y: 50, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.8, ease: "power2.out" },
+      "-=0.3"
+    )
+  }, [])
+
+  const features = [
+    {
+      icon: <Bot className="w-10 h-10" />,
+      title: "AI-Driven Insights",
+      description: "Utilizing advanced AI algorithms to provide accurate attendance statistics and analytics."
+    },
+    {
+      icon: <Zap className="w-10 h-10" />,
+      title: "Real-time Analytics",
+      description: "Get instant statistics on attendance patterns with live updates across all devices."
+    },
+    {
+      icon: <Shield className="w-10 h-10" />,
+      title: "High Accuracy & Security",
+      description: "Ensuring high accuracy in attendance tracking while keeping your data secure and private."
+    }
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-black to-gray-900">
-      <main className="container mx-auto px-4 py-16 flex flex-col items-center justify-center space-y-12">
-        <div ref={titleRef} className="w-full max-w-6xl min-w-9xl">
-          <svg viewBox="0 0 1000 200" className="w-full h-auto min-h-[100px] md:min-h-[150px]">
-            <defs>
-              <mask id="masker">
-                <rect className="gradientBox" fill="url(#theGradient)" x="0" y="0" width="1000" height="200"/>
-              </mask>
-              <linearGradient id="theGradient" gradientUnits="userSpaceOnUse" x1="-1000" y1="100" x2="0" y2="100">
-                <stop offset="0" style={{stopColor: "#fff"}}/>
-                <stop offset="1" style={{stopColor: "#000"}}/>
-              </linearGradient>
-            </defs>
-            <g mask="url(#masker)">
-              <text transform="translate(500 140)" textAnchor="middle" fontSize="130" fill="#fff">HUKUM!</text>
-            </g>
-          </svg>
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto px-4 py-16 space-y-24">
+        <div className="text-center space-y-12">
+          <div ref={titleRef} className="w-full max-w-6xl mx-auto">
+            <svg viewBox="0 0 1000 200" className="w-full h-auto min-h-[100px] md:min-h-[150px]">
+              <defs>
+                <mask id="masker">
+                  <rect className="gradientBox" fill="url(#theGradient)" x="0" y="0" width="1000" height="200"/>
+                </mask>
+                <linearGradient id="theGradient" gradientUnits="userSpaceOnUse" x1="-1000" y1="100" x2="0" y2="100">
+                  <stop offset="0" style={{stopColor: "#fff"}}/>
+                  <stop offset="1" style={{stopColor: "#000"}}/>
+                </linearGradient>
+              </defs>
+              <g mask="url(#masker)">
+                <text transform="translate(500 140)" textAnchor="middle" fontSize="130" fill="#fff">HUKUM!</text>
+              </g>
+            </svg>
+          </div>
+          
+          <div ref={heroRef} className="max-w-2xl mx-auto space-y-6">
+            <h2 className="text-2xl md:text-3xl font-medium text-muted-foreground">
+              Image Processing based Attendance Management System
+            </h2>
+            <p className="text-muted-foreground/80">
+              Streamline your attendance tracking with our intuitive and powerful platform.
+            </p>
+          </div>
         </div>
-        <div className="flex flex-col sm:flex-row gap-6 w-full max-w-lg justify-center">
-          <Button 
-            ref={uploadBtnRef}
-            size="lg" 
-            className="flex items-center gap-3 px-6 py-3 transition-all duration-2000 bg-gray-800 hover:bg-gradient-to-r hover:from-purple-600 hover:via-blue-500 hover:to-cyan-400 text-white"
-            onClick={() => setIsUploadOpen(true)}
-          >
-            <Upload className="w-5 h-5" />
-            <span className="font-medium">Upload Images</span>
-          </Button>
-          <FileUpload isOpen={isUploadOpen} onClose={() => setIsUploadOpen(false)} />
+
+        <div ref={cardsRef} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {features.map((feature, index) => (
+            <Card key={index} className="glass-card stats-card overflow-hidden">
+              <CardContent className="p-6 space-y-4">
+                <div className="rounded-full w-16 h-16 flex items-center justify-center bg-white/5">
+                  {feature.icon}
+                </div>
+                <h3 className="text-xl font-semibold">{feature.title}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        <div ref={ctaRef} className="text-center space-y-8">
+          <div className="max-w-2xl mx-auto space-y-4">
+            <h2 className="text-3xl font-bold">Ready to Get Started?</h2>
+          <div className="flex justify-center">
+            <Button
+              size="lg"
+              className="group bg-blue-600 hover:bg-blue-700 transition-all duration-300"
+              asChild
+            >
+              <Link href="/sign-in" className="flex items-center text-white">
+                Try it Free
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </Button>
+          </div>
+        </div>
         </div>
       </main>
     </div>
-  );
+  )
 }
