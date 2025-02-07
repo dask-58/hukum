@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import FileUpload from "@/components/FileUpload"
 
 const attendanceData = [
   {
@@ -44,7 +45,8 @@ const allClasses = [
 ]
 
 export default function DashboardPage() {
-  const { user } = useUser()
+  const { user, isSignedIn } = useUser()
+  const isAdminOrSpecialUser = user?.emailAddresses.some(email => email.emailAddress === "googldhruv@gmail.com")
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showAllData, setShowAllData] = useState(false)
   const [selectedClass, setSelectedClass] = useState<string>("all")
@@ -184,7 +186,15 @@ export default function DashboardPage() {
     }
     return variants[status] || "bg-gray-500/20 text-gray-200"
   }
-
+  if (!isSignedIn) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
+        <h1 className="text-2xl font-bold mb-4">Welcome to the Attendance Dashboard</h1>
+        <p className="text-lg mb-6">Please sign in to view your attendance records.</p>
+        <Button onClick={() => window.location.href = "/sign-in"}>Sign In</Button>
+      </div>
+    )
+  }
   return (
     <TooltipProvider>
       <main className="max-w-[75rem] w-full mx-auto p-6 space-y-8">
@@ -196,6 +206,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="stats-grid fade-in">
+          {isAdminOrSpecialUser && (<FileUpload />)}
           <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
