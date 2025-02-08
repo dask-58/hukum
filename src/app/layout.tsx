@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Duru_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from '@clerk/themes'
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import AuthWrapper from "@/components/AuthWrapper";
@@ -42,7 +43,13 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={
+        {
+          baseTheme: dark,
+        }
+      }
+    >
       <html lang="en">
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
