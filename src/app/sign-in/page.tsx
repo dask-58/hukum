@@ -7,7 +7,7 @@ export default function SignInPage() {
     <div className="flex justify-center items-center min-h-screen bg-black">
       <SignIn
         routing="hash"
-        redirectUrl="/dashboard"
+        forceRedirectUrl="/dashboard"
       />
     </div>
   )
