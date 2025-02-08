@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Quicksand } from "next/font/google";
+import { Quicksand } from "next/font/google"; // Changed font to Quicksand
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -10,7 +10,7 @@ import { Toaster } from "@/components/ui/toaster";
 
 const quicksand = Quicksand({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "700"],
+  weight: ["400", "700"], // Adjusted weights for Quicksand
   variable: "--font-quicksand",
 });
 
@@ -47,7 +47,7 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
-        <body className={`${quicksand.className} antialiased`}>
+        <body className={`${quicksand.className} antialiased`}> {/* Updated to use Quicksand */}
           <AuthWrapper>
             <Navbar />
             <main>{children}</main>

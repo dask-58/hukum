@@ -137,7 +137,7 @@ export default function AboutPage() {
                 Project Overview
               </h2>
               <p className="text-white/80 text-lg leading-relaxed">
-                The BaDAM152 Attendance System is a modern solution designed to streamline
+                The HUKUM Attendance System is a modern solution designed to streamline
                 the process of tracking and managing student attendance in educational
                 institutions. Our system aims to eliminate the traditional paper-based
                 attendance methods and provide a more efficient, accurate, and transparent
