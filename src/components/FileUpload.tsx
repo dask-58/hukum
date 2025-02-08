@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Upload, X, Image, Check, AlertCircle } from "lucide-react";
+import { Upload, X, Image, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function FileUpload() {
