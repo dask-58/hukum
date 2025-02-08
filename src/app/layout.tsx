@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Quicksand } from "next/font/google"; // Changed font to Quicksand
+import { Duru_Sans } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
@@ -8,10 +8,10 @@ import "./globals.css";
 import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
 
-const quicksand = Quicksand({
+const duruSans = Duru_Sans({
   subsets: ["latin"],
-  weight: ["400", "700"], // Adjusted weights for Quicksand
-  variable: "--font-quicksand",
+  weight: ["400"],
+  variable: "--font-duru-sans",
 });
 
 export const metadata: Metadata = {
@@ -47,7 +47,7 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
-        <body className={`${quicksand.className} antialiased`}> {/* Updated to use Quicksand */}
+        <body className={`${duruSans.className} antialiased`}> {/* Updated to use Duru Sans */}
           <AuthWrapper>
             <Navbar />
             <main>{children}</main>
