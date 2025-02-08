@@ -1,5 +1,4 @@
 "use client"
-
 import { useState, useMemo } from "react"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
@@ -15,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import FileUpload from "@/components/FileUpload"
-
+import { AdminDashboard } from "@/components/AdminDashboard"
 const attendanceData = [
   {
     id: 1,
@@ -39,18 +38,23 @@ const attendanceData = [
     time: "11:00 AM",
   }
 ]
-
 const allClasses = [
   "CS301 - Software Engineering",
 ]
-
 export default function DashboardPage() {
   const { user, isSignedIn } = useUser()
-  const isAdminOrSpecialUser = user?.emailAddresses.some(email => email.emailAddress === "googldhruv@gmail.com")
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showAllData, setShowAllData] = useState(false)
   const [selectedClass, setSelectedClass] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+
+  const isAdmin = user?.emailAddresses.some(email => 
+    ["googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
+  )
+
+  if (isAdmin) {
+    return <AdminDashboard />
+  }
 
   const { overallStats, classStats, monthlyOverview } = useMemo(() => {
     const totalClasses = attendanceData.length
@@ -65,7 +69,6 @@ export default function DashboardPage() {
         percentage: (classRecords.length > 0) ? (present / classRecords.length) * 100 : 0
       }
     })
-
     const monthStart = startOfMonth(date || new Date())
     const monthEnd = endOfMonth(date || new Date())
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
@@ -80,7 +83,6 @@ export default function DashboardPage() {
         isWeekend: isWeekend(day)
       }
     })
-
     return {
       overallStats: {
         total: totalClasses,
@@ -91,7 +93,7 @@ export default function DashboardPage() {
       monthlyOverview
     }
   }, [date])
-
+  
   const classesToDisplay = useMemo(() => {
     const monthDates = eachDayOfInterval({ start: startOfMonth(date || new Date()), end: endOfMonth(date || new Date()) });
     if (showAllData) {
@@ -168,7 +170,6 @@ export default function DashboardPage() {
         item.time
       ])
     ].map(e => e.join(',')).join('\n')
-
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
@@ -186,6 +187,7 @@ export default function DashboardPage() {
     }
     return variants[status] || "bg-gray-500/20 text-gray-200"
   }
+
   if (!isSignedIn) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-900 text-white">
@@ -195,6 +197,7 @@ export default function DashboardPage() {
       </div>
     )
   }
+
   return (
     <TooltipProvider>
       <main className="max-w-[75rem] w-full mx-auto p-6 space-y-8">
@@ -204,9 +207,8 @@ export default function DashboardPage() {
           </h1>
           <p className="text-gray-400">Track your class attendance</p>
         </div>
-
         <div className="stats-grid fade-in">
-          {isAdminOrSpecialUser && (<FileUpload />)}
+          {isAdmin && (<FileUpload />)}
           <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -232,7 +234,6 @@ export default function DashboardPage() {
               />
             </CardContent>
           </Card>
-
           <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg">Monthly Overview</CardTitle>
@@ -269,7 +270,6 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
-
           <Card className="glass-card stats-card">
             <CardHeader>
               <CardTitle className="text-lg">Course Statistics</CardTitle>
@@ -294,7 +294,6 @@ export default function DashboardPage() {
             </CardContent>
           </Card>
         </div>
-
         <Card className="glass-card fade-in">
           <CardHeader className="flex flex-row items-center justify-between">
             <div className="space-y-1">
@@ -339,7 +338,6 @@ export default function DashboardPage() {
                   />
                 </PopoverContent>
               </Popover>
-
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
                 <SelectTrigger className="w-[150px] border-white/10">
                   <SelectValue placeholder="Filter by status" />
@@ -351,7 +349,6 @@ export default function DashboardPage() {
                   <SelectItem value="No Class">No Class</SelectItem>
                 </SelectContent>
               </Select>
-
               <Button
                 variant={showAllData ? "default" : "outline"}
                 onClick={() => setShowAllData(!showAllData)}
@@ -360,7 +357,6 @@ export default function DashboardPage() {
                 {showAllData ? "Show Single Day" : "Show Full Month"}
               </Button>
             </div>
-
             <div className="rounded-lg border border-white/10 overflow-hidden">
               <Table>
                 <TableHeader>
@@ -411,7 +407,6 @@ export default function DashboardPage() {
             </div>
           </CardContent>
         </Card>
-
         <Card className="glass-card fade-in">
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
