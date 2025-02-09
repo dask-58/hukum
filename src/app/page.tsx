@@ -126,7 +126,7 @@ export default function Home() {
               asChild
             >
               <Link href="/sign-in" className="flex items-center text-white">
-                Try it Free
+                Try for FREE!
                 <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </Button>
