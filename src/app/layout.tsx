@@ -8,6 +8,8 @@ import AuthWrapper from "@/components/AuthWrapper";
 import "./globals.css";
 import type React from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const duruSans = Duru_Sans({
   subsets: ["latin"],
@@ -57,7 +59,11 @@ export default function RootLayout({
         <body className={`${duruSans.className} antialiased`}> {/* Updated to use Duru Sans */}
           <AuthWrapper>
             <Navbar />
-            <main>{children}</main>
+            <main>
+              {children}
+              <Analytics />
+              <SpeedInsights />
+            </main>
             <Footer />
           </AuthWrapper>
           <Toaster />
