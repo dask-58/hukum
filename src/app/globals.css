@@ -1,6 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* @import "uploadthing/tw/v4"; */
+/* @source "../node_modules/@uploadthing/react/dist"; * <-- depends on your project structure */
 
 @layer base {
   :root {
@@ -79,5 +81,16 @@
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }
