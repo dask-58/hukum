@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Duru_Sans } from "next/font/google";
+import { Inter } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from '@clerk/themes'
 import Navbar from "@/components/Navbar";
@@ -11,10 +11,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next"
 
-const duruSans = Duru_Sans({
+const inter = Inter({
   subsets: ["latin"],
   weight: ["400"],
-  variable: "--font-duru-sans",
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -56,7 +56,7 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
-        <body className={`${duruSans.className} antialiased`}> {/* Updated to use Duru Sans */}
+        <body className={`${inter.className} antialiased`}> {/* Updated to use Inter */}
           <AuthWrapper>
             <Navbar />
             <main>
