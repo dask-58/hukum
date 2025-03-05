@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
-import { DownloadIcon, CalendarIcon } from "lucide-react"
+import { DownloadIcon, CalendarIcon, RefreshCcw } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -17,15 +17,15 @@ export function AdminDashboard() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [studentsData, setStudentsData] = useState<any[]>([])
 
+  const refreshData = async () => {
+    const response = await fetch('/api/attendance')
+    const data = await response.json()
+    data.sort((a: any, b: any) => a.studentRollNo - b.studentRollNo)
+    setStudentsData(data)
+  }
+
   useEffect(() => {
-    const fetchData = async () => {
-      const response = await fetch('/api/attendance')
-      const data = await response.json()
-      // Sort the data by studentRollNo
-      data.sort((a: any, b: any) => a.studentRollNo - b.studentRollNo);
-      setStudentsData(data)
-    }
-    fetchData()
+    refreshData()
   }, [])
 
   const exportToCSV = () => {
@@ -33,27 +33,27 @@ export function AdminDashboard() {
       ...new Set(studentsData.flatMap(student =>
         Object.keys(student).filter(key => key.startsWith('date_'))
       ))
-    ].sort();
+    ].sort()
 
-    const header = ['Roll Number', 'Name', ...allDates, 'Attendance Percentage'];
+    const header = ['Roll Number', 'Name', ...allDates, 'Attendance Percentage']
     const csvData = studentsData.map(student => {
-      const rowStatuses = allDates.map(date => student[date] || 'Absent');
-      return [student.studentRollNo, student.name, ...rowStatuses, student.attendancePercentage + '%'];
-    });
+      const rowStatuses = allDates.map(date => student[date] || 'Absent')
+      return [student.studentRollNo, student.name, ...rowStatuses, student.attendancePercentage + '%']
+    })
 
-    // 4. Combine header and rows into CSV content.
+    // Combine header and rows into CSV content.
     const csvContent = [header, ...csvData]
       .map(row => row.join(','))
-      .join('\n');
+      .join('\n')
 
-    // 5. Create a Blob and trigger the download.
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'class-attendance.csv';
-    a.click();
-    window.URL.revokeObjectURL(url);
+    // Create a Blob and trigger the download.
+    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'class-attendance.csv'
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const getStatusBadge = (status: string) => {
@@ -105,14 +105,24 @@ export function AdminDashboard() {
               View and manage class attendance
             </CardDescription>
           </div>
-          <Button 
-            variant="outline" 
-            onClick={exportToCSV}
-            className="border-white/10 hover:bg-white/5"
-          >
-            <DownloadIcon className="mr-2 h-4 w-4" />
-            Export CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={refreshData}
+              className="border-white/10 hover:bg-white/5"
+            >
+              <RefreshCcw className="mr-2 h-4 w-4" />
+              Refresh
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={exportToCSV}
+              className="border-white/10 hover:bg-white/5"
+            >
+              <DownloadIcon className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 mb-6">
