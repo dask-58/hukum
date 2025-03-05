@@ -1,5 +1,5 @@
 "use client"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
@@ -15,65 +15,88 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { TooltipProvider } from "@/components/ui/tooltip"
 import FileUpload from "@/components/FileUpload"
 import { AdminDashboard } from "@/components/AdminDashboard"
-const attendanceData = [
-  {
-    id: 1,
-    date: "2025-02-04",
-    class: "CS301 - Software Engineering",
-    status: "Present",
-    time: "11:00 AM",
-  },
-  {
-    id: 2,
-    date: "2025-02-05",
-    class: "CS301 - Software Engineering",
-    status: "Absent",
-    time: "11:00 AM",
-  },
-  {
-    id: 3,
-    date: "2025-02-11",
-    class: "CS301 - Software Engineering",
-    status: "Present",
-    time: "11:00 AM",
-  }
-]
-const allClasses = [
-  "CS301 - Software Engineering",
-]
+
+// List of classes for the schedule (adjust as needed)
+const allClasses = ["CS301 - Software Engineering"]
+
 export default function DashboardPage() {
   const { user, isSignedIn } = useUser()
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showAllData, setShowAllData] = useState(false)
   const [selectedClass, setSelectedClass] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  // This state will hold the transformed attendance data array
+  const [attendanceData, setAttendanceData] = useState<any[]>([])
 
   const isAdmin = user?.emailAddresses.some(email => 
-    ["googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
+    ["googldhruv@gmail.com", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
   )
 
+  // If user is admin, render the AdminDashboard
   if (isAdmin) {
     return <AdminDashboard />
   }
 
+  // Helper: extract roll number from an email (e.g. "23bcs044@iiitdwd.ac.in" -> 44)
+  const extractRollNo = (email: string): number | null => {
+    const match = email.match(/23bcs0*(\d+)/i)
+    return match ? parseInt(match[1]) : null
+  }
+
+  // Fetch the student's attendance record from our dynamic API route
+  useEffect(() => {
+    const fetchAttendance = async () => {
+      if (user && user.emailAddresses.length > 0) {
+        const email = user.emailAddresses[0].emailAddress
+        const rollNo = extractRollNo(email)
+        if (!rollNo) return
+        try {
+          const res = await fetch(`/api/student/dashboard?rollNo=${rollNo}`)
+          const data = await res.json()
+          if (data.error) {
+            console.error(data.error)
+            return
+          }
+          // Transform the record into an array similar to the expected attendanceData.
+          // We iterate over keys starting with "date_" and format them.
+          const transformed = Object.entries(data)
+            .filter(([key]) => key.startsWith("date_"))
+            .map(([key, value], index) => ({
+              id: index + 1,
+              date: key.replace("date_", "").replace(/_/g, "-"),
+              class: allClasses[0],
+              status: value || "No Class",
+            }))
+          setAttendanceData(transformed)
+        } catch (error) {
+          console.error("Error fetching attendance:", error)
+        }
+      }
+    }
+    fetchAttendance()
+  }, [user])
+
+  // Compute overall stats, class stats and monthly overview based on fetched attendanceData
   const { overallStats, classStats, monthlyOverview } = useMemo(() => {
     const totalClasses = attendanceData.length
     const presentClasses = attendanceData.filter(record => record.status === "Present").length
-    const classStats = allClasses.map(className => {
+    const cStats = allClasses.map(className => {
       const classRecords = attendanceData.filter(record => record.class === className)
       const present = classRecords.filter(record => record.status === "Present").length
       return {
         className,
         total: classRecords.length,
         present,
-        percentage: (classRecords.length > 0) ? (present / classRecords.length) * 100 : 0
+        percentage: classRecords.length > 0 ? (present / classRecords.length) * 100 : 0
       }
     })
-    const monthStart = startOfMonth(date || new Date())
-    const monthEnd = endOfMonth(date || new Date())
+
+    const currentDate = date || new Date()
+    const monthStart = startOfMonth(currentDate)
+    const monthEnd = endOfMonth(currentDate)
     const daysInMonth = eachDayOfInterval({ start: monthStart, end: monthEnd })
-    
-    const monthlyOverview = daysInMonth.map(day => {
+
+    const mOverview = daysInMonth.map(day => {
       const formattedDate = format(day, 'yyyy-MM-dd')
       const records = attendanceData.filter(record => record.date === formattedDate)
       return {
@@ -87,22 +110,24 @@ export default function DashboardPage() {
       overallStats: {
         total: totalClasses,
         present: presentClasses,
-        percentage: (totalClasses > 0) ? (presentClasses / totalClasses) * 100 : 0
+        percentage: totalClasses > 0 ? (presentClasses / totalClasses) * 100 : 0
       },
-      classStats,
-      monthlyOverview
+      classStats: cStats,
+      monthlyOverview: mOverview
     }
-  }, [date])
-  
+  }, [attendanceData, date])
+
+  // Compute classes to display based on either all data for the month or single selected date.
   const classesToDisplay = useMemo(() => {
-    const monthDates = eachDayOfInterval({ start: startOfMonth(date || new Date()), end: endOfMonth(date || new Date()) });
+    const currentDate = date || new Date()
+    const monthDates = eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) })
     if (showAllData) {
       return monthDates.map((day) => {
         const formattedDate = format(day, "yyyy-MM-dd")
         if (isWeekend(day)) {
           return {
             date: formattedDate,
-            classes: [{ class: "Weekend", status: "Holiday", time: "-" }],
+            classes: [{ class: "Weekend", status: "Holiday" }],
           }
         }
         const classesOnDate = attendanceData.filter((record) => record.date === formattedDate)
@@ -114,19 +139,18 @@ export default function DashboardPage() {
               classRecord || {
                 class: className,
                 status: "No Class",
-                time: "-",
               }
             )
           }),
         }
       })
-    } else if (date) {
-      const formattedDate = format(date, "yyyy-MM-dd")
-      if (isWeekend(date)) {
+    } else {
+      const formattedDate = format(currentDate, "yyyy-MM-dd")
+      if (isWeekend(currentDate)) {
         return [
           {
             date: formattedDate,
-            classes: [{ class: "Weekend", status: "Holiday", time: "-" }],
+            classes: [{ class: "Weekend", status: "Holiday" }],
           },
         ]
       }
@@ -140,15 +164,13 @@ export default function DashboardPage() {
               classRecord || {
                 class: className,
                 status: "No Class",
-                time: "-",
               }
             )
           }),
         },
       ]
     }
-    return []
-  }, [date, showAllData])
+  }, [attendanceData, date, showAllData])
 
   const filteredData = useMemo(() => {
     return classesToDisplay.map(dayData => ({
@@ -162,12 +184,11 @@ export default function DashboardPage() {
 
   const exportToCSV = () => {
     const csvContent = [
-      ['Date', 'Class', 'Status', 'Time'],
+      ['Date', 'Class', 'Status'],
       ...attendanceData.map(item => [
         item.date,
         item.class,
         item.status,
-        item.time
       ])
     ].map(e => e.join(',')).join('\n')
     const blob = new Blob([csvContent], { type: 'text/csv' })
@@ -362,7 +383,6 @@ export default function DashboardPage() {
                 <TableHeader>
                   <TableRow className="border-white/10 hover:bg-white/[0.02]">
                     <TableHead className="text-gray-300">Date</TableHead>
-                    <TableHead className="text-gray-300">Time</TableHead>
                     <TableHead className="text-gray-300">Class</TableHead>
                     <TableHead className="text-gray-300">Status</TableHead>
                   </TableRow>
@@ -382,7 +402,6 @@ export default function DashboardPage() {
                             {format(new Date(dayData.date), "EEE, MMM d")}
                           </TableCell>
                         )}
-                        <TableCell className="text-gray-300">{record.time}</TableCell>
                         <TableCell className="font-medium text-white">{record.class}</TableCell>
                         <TableCell>
                           <Badge className={getStatusBadge(record.status)}>
