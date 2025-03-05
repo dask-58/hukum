@@ -10,52 +10,35 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import FileUpload from "@/components/FileUpload"
-import { useState } from "react"
-
-const studentsData = Array.from({ length: 70 }, (_, index) => {
-  // Skipping student 14 as per original logic.
-  if (index + 1 === 14) return null;
-  const rollNumber = `23bcs${String(index + 1).padStart(3, '0')}`;
-  const attendanceRecords = [
-    { date: "2025-02-08", status: Math.random() > 0.5 ? "Present" : "Absent" },
-    { date: "2025-02-07", status: Math.random() > 0.5 ? "Present" : "Absent" },
-    { date: "2025-02-06", status: Math.random() > 0.5 ? "Present" : "Absent" },
-  ];
-  const presentCount = attendanceRecords.filter(record => record.status === "Present").length;
-  const attendancePercentage = (presentCount / attendanceRecords.length) * 100;
-
-  return {
-    id: index + 1,
-    name: `Student ${index + 1}`,
-    roll: rollNumber,
-    attendance: attendanceRecords,
-    attendancePercentage: attendancePercentage.toFixed(2)
-  };
-}).filter(student => student !== null);
+import { useState, useEffect } from "react"
 
 export function AdminDashboard() {
   const [date, setDate] = useState<Date>(new Date())
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
+  const [studentsData, setStudentsData] = useState<any[]>([])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch('/api/attendance')
+      const data = await response.json()
+      // Sort the data by studentRollNo
+      data.sort((a: any, b: any) => a.studentRollNo - b.studentRollNo);
+      setStudentsData(data)
+    }
+    fetchData()
+  }, [])
 
   const exportToCSV = () => {
-    // 1. Get all unique dates across all students' attendance records.
     const allDates = [
       ...new Set(studentsData.flatMap(student =>
-        student.attendance.map(record => record.date)
+        Object.keys(student).filter(key => key.startsWith('date_'))
       ))
     ].sort();
 
-    // 2. Build the CSV header.
     const header = ['Roll Number', 'Name', ...allDates, 'Attendance Percentage'];
-
-    // 3. For each student, create a row with:
-    //    - Roll number and name.
-    //    - For each date in header, attendance status (or "Absent" if not present).
-    //    - The attendance percentage.
     const csvData = studentsData.map(student => {
-      const attendanceMap = new Map(student.attendance.map(record => [record.date, record.status]));
-      const rowStatuses = allDates.map(date => attendanceMap.get(date) || 'Absent');
-      return [student.roll, student.name, ...rowStatuses, student.attendancePercentage + '%'];
+      const rowStatuses = allDates.map(date => student[date] || 'Absent');
+      return [student.studentRollNo, student.name, ...rowStatuses, student.attendancePercentage + '%'];
     });
 
     // 4. Combine header and rows into CSV content.
@@ -82,9 +65,7 @@ export function AdminDashboard() {
   const overallStats = {
     totalStudents: studentsData.length,
     presentToday: studentsData.filter(student => 
-      student.attendance.some(record => 
-        record.date === format(date, 'yyyy-MM-dd') && record.status === "Present"
-      )
+      student[`date_${format(date, 'yyyy_MM_dd')}`] === "Present"
     ).length
   }
 
@@ -179,24 +160,22 @@ export function AdminDashboard() {
               </TableHeader>
               <TableBody>
                 {studentsData.map((student) => {
-                  const todayAttendance = student.attendance.find(
-                    record => record.date === format(date, 'yyyy-MM-dd')
-                  )
+                  const todayAttendance = student[`date_${format(date, 'yyyy_MM_dd')}`]
                   
-                  if (selectedStatus !== 'all' && todayAttendance?.status !== selectedStatus) {
+                  if (selectedStatus !== 'all' && todayAttendance !== selectedStatus) {
                     return null
                   }
                   return (
                     <TableRow 
-                      key={student.id}
+                      key={student.studentRollNo}
                       className="border-white/10 hover:bg-white/[0.02]"
                     >
-                      <TableCell className="font-mono text-gray-300">{student.roll}</TableCell>
+                      <TableCell className="font-mono text-gray-300">{student.studentRollNo}</TableCell>
                       <TableCell className="font-medium text-white">{student.name}</TableCell>
                       <TableCell>
                         {todayAttendance ? (
-                          <Badge className={getStatusBadge(todayAttendance.status)}>
-                            {todayAttendance.status}
+                          <Badge className={getStatusBadge(todayAttendance)}>
+                            {todayAttendance}
                           </Badge>
                         ) : (
                           <Badge className="bg-gray-500/20 text-gray-200">

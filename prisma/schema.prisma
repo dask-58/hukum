@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Attendance {
+  studentRollNo         Int               @id
+  name                  String
+
+  date_2025_03_04       AttendanceStatus? 
+  date_2025_03_05       AttendanceStatus?
+  date_2025_03_06       AttendanceStatus?
+  date_2025_03_11       AttendanceStatus? 
+  date_2025_03_12       AttendanceStatus?
+  date_2025_03_13       AttendanceStatus?
+  date_2025_03_18       AttendanceStatus? 
+  date_2025_03_19       AttendanceStatus?
+  date_2025_03_20       AttendanceStatus?
+  date_2025_03_25       AttendanceStatus? 
+  date_2025_03_26       AttendanceStatus?
+  date_2025_03_27       AttendanceStatus?
+
+  attendancePercentage  Float?
+}
+
+enum AttendanceStatus {
+  Present
+  Absent
+  NoClass
+  Holiday
+}
