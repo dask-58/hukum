@@ -105,23 +105,28 @@ export function AdminDashboard() {
               View and manage class attendance
             </CardDescription>
           </div>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={refreshData}
-              className="border-white/10 hover:bg-white/5"
-            >
-              <RefreshCcw className="mr-2 h-4 w-4" />
-              Refresh
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={exportToCSV}
-              className="border-white/10 hover:bg-white/5"
-            >
-              <DownloadIcon className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
+          <div className="flex flex-wrap gap-2">
+          <Button 
+          variant="outline" 
+          onClick={async () => {
+            const button = document.querySelector('.refresh-icon');
+            button?.classList.add('animate-spin');
+            await refreshData();
+            button?.classList.remove('animate-spin');
+          }}
+          className="border-white/10 hover:bg-white/5 w-full md:w-auto"
+          >
+          <RefreshCcw className="mr-2 h-4 w-4 refresh-icon" />
+          Refresh
+          </Button>
+          <Button 
+          variant="outline" 
+          onClick={exportToCSV}
+          className="border-white/10 hover:bg-white/5 w-full md:w-auto"
+          >
+          <DownloadIcon className="mr-2 h-4 w-4" />
+          Export CSV
+          </Button>
           </div>
         </CardHeader>
         <CardContent>
