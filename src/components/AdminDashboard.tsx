@@ -1,24 +1,56 @@
 "use client"
 
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react"
 import { format } from "date-fns"
-import { DownloadIcon, CalendarIcon, RefreshCcw } from "lucide-react"
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { CalendarIcon, DownloadIcon, RefreshCcw } from "lucide-react"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import FileUpload from "@/components/FileUpload"
-import { useState, useEffect } from "react"
+
+// Dialog components for the modal
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog"
 
 export function AdminDashboard() {
   const [date, setDate] = useState<Date>(new Date())
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [studentsData, setStudentsData] = useState<any[]>([])
+  const [selectedStudent, setSelectedStudent] = useState<any>(null)
+  const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
+  const [editStatus, setEditStatus] = useState<string>("Absent")
 
   const refreshData = async () => {
-    const response = await fetch('/api/attendance')
+    const response = await fetch("/api/attendance")
     const data = await response.json()
     data.sort((a: any, b: any) => a.studentRollNo - b.studentRollNo)
     setStudentsData(data)
@@ -30,43 +62,82 @@ export function AdminDashboard() {
 
   const exportToCSV = () => {
     const allDates = [
-      ...new Set(studentsData.flatMap(student =>
-        Object.keys(student).filter(key => key.startsWith('date_'))
-      ))
+      ...new Set(
+        studentsData.flatMap((student) =>
+          Object.keys(student).filter((key) => key.startsWith("date_"))
+        )
+      ),
     ].sort()
 
-    const header = ['Roll Number', 'Name', ...allDates, 'Attendance Percentage']
-    const csvData = studentsData.map(student => {
-      const rowStatuses = allDates.map(date => student[date] || 'Absent')
-      return [student.studentRollNo, student.name, ...rowStatuses, student.attendancePercentage + '%']
+    const header = ["Roll Number", "Name", ...allDates, "Attendance Percentage"]
+    const csvData = studentsData.map((student) => {
+      const rowStatuses = allDates.map((date) => student[date] || "Absent")
+      return [
+        student.studentRollNo,
+        student.name,
+        ...rowStatuses,
+        student.attendancePercentage + "%",
+      ]
     })
 
     // Combine header and rows into CSV content.
-    const csvContent = [header, ...csvData]
-      .map(row => row.join(','))
-      .join('\n')
+    const csvContent = [header, ...csvData].map((row) => row.join(",")).join("\n")
 
     // Create a Blob and trigger the download.
-    const blob = new Blob([csvContent], { type: 'text/csv' })
+    const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
+    const a = document.createElement("a")
     a.href = url
-    a.download = 'class-attendance.csv'
+    a.download = "class-attendance.csv"
     a.click()
     window.URL.revokeObjectURL(url)
   }
 
   const getStatusBadge = (status: string) => {
-    return status === "Present" 
+    return status === "Present"
       ? "bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30"
       : "bg-red-500/20 text-red-200 hover:bg-red-500/30"
   }
 
   const overallStats = {
     totalStudents: studentsData.length,
-    presentToday: studentsData.filter(student => 
-      student[`date_${format(date, 'yyyy_MM_dd')}`] === "Present"
-    ).length
+    presentToday: studentsData.filter(
+      (student) => student[`date_${format(date, "yyyy_MM_dd")}`] === "Present"
+    ).length,
+  }
+
+  // Opens the edit modal and pre-populates the status based on the selected date.
+  const handleEditClick = (student: any) => {
+    setSelectedStudent(student)
+    const currentStatus =
+      student[`date_${format(date, "yyyy_MM_dd")}`] || "Absent"
+    setEditStatus(currentStatus)
+    setIsEditModalOpen(true)
+  }
+
+  // Calls the update API and refreshes data.
+  const handleSaveEdit = async () => {
+    const formattedDate = format(date, "yyyy_MM_dd")
+    try {
+      const res = await fetch("/api/attendance/update", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          rollNo: selectedStudent.studentRollNo, // Note renamed key.
+          field: `date_${formattedDate}`,         // Field key instead of date.
+          newStatus: editStatus,                   // newStatus instead of status.
+        }),
+      })
+      if (res.ok) {
+        refreshData()
+        setIsEditModalOpen(false)
+        setSelectedStudent(null)
+      } else {
+        console.error("Failed to update attendance")
+      }
+    } catch (error) {
+      console.error("Error updating attendance:", error)
+    }
   }
 
   return (
@@ -90,7 +161,9 @@ export function AdminDashboard() {
               </div>
               <div>
                 <p className="text-gray-400">Present Today</p>
-                <p className="text-3xl font-bold text-emerald-400">{overallStats.presentToday}</p>
+                <p className="text-3xl font-bold text-emerald-400">
+                  {overallStats.presentToday}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -106,35 +179,35 @@ export function AdminDashboard() {
             </CardDescription>
           </div>
           <div className="flex flex-wrap gap-2">
-          <Button 
-          variant="outline" 
-          onClick={async () => {
-            const button = document.querySelector('.refresh-icon');
-            button?.classList.add('animate-spin');
-            await refreshData();
-            button?.classList.remove('animate-spin');
-          }}
-          className="border-white/10 hover:bg-white/5 w-full md:w-auto"
-          >
-          <RefreshCcw className="mr-2 h-4 w-4 refresh-icon" />
-          Refresh
-          </Button>
-          <Button 
-          variant="outline" 
-          onClick={exportToCSV}
-          className="border-white/10 hover:bg-white/5 w-full md:w-auto"
-          >
-          <DownloadIcon className="mr-2 h-4 w-4" />
-          Export CSV
-          </Button>
+            <Button
+              variant="outline"
+              onClick={async () => {
+                const button = document.querySelector(".refresh-icon")
+                button?.classList.add("animate-spin")
+                await refreshData()
+                button?.classList.remove("animate-spin")
+              }}
+              className="border-white/10 hover:bg-white/5 w-full md:w-auto"
+            >
+              <RefreshCcw className="mr-2 h-4 w-4 refresh-icon" />
+              Refresh
+            </Button>
+            <Button
+              variant="outline"
+              onClick={exportToCSV}
+              className="border-white/10 hover:bg-white/5 w-full md:w-auto"
+            >
+              <DownloadIcon className="mr-2 h-4 w-4" />
+              Export CSV
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-4 mb-6">
             <Popover>
               <PopoverTrigger asChild>
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-[240px] justify-start text-left font-normal border-white/10 hover:bg-white/5"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -169,24 +242,33 @@ export function AdminDashboard() {
                   <TableHead className="text-gray-300">Roll Number</TableHead>
                   <TableHead className="text-gray-300">Name</TableHead>
                   <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">Attendance Percentage</TableHead>
+                  <TableHead className="text-gray-300">
+                    Attendance Percentage
+                  </TableHead>
                   <TableHead className="text-gray-300">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {studentsData.map((student) => {
-                  const todayAttendance = student[`date_${format(date, 'yyyy_MM_dd')}`]
-                  
-                  if (selectedStatus !== 'all' && todayAttendance !== selectedStatus) {
+                  const todayAttendance =
+                    student[`date_${format(date, "yyyy_MM_dd")}`]
+                  if (
+                    selectedStatus !== "all" &&
+                    todayAttendance !== selectedStatus
+                  ) {
                     return null
                   }
                   return (
-                    <TableRow 
+                    <TableRow
                       key={student.studentRollNo}
                       className="border-white/10 hover:bg-white/[0.02]"
                     >
-                      <TableCell className="font-mono text-gray-300">{student.studentRollNo}</TableCell>
-                      <TableCell className="font-medium text-white">{student.name}</TableCell>
+                      <TableCell className="font-mono text-gray-300">
+                        {student.studentRollNo}
+                      </TableCell>
+                      <TableCell className="font-medium text-white">
+                        {student.name}
+                      </TableCell>
                       <TableCell>
                         {todayAttendance ? (
                           <Badge className={getStatusBadge(todayAttendance)}>
@@ -198,12 +280,15 @@ export function AdminDashboard() {
                           </Badge>
                         )}
                       </TableCell>
-                      <TableCell className="text-gray-300">{student.attendancePercentage}%</TableCell>
+                      <TableCell className="text-gray-300">
+                        {student.attendancePercentage}%
+                      </TableCell>
                       <TableCell>
-                        <Button 
-                          variant="ghost" 
+                        <Button
+                          variant="ghost"
                           size="sm"
                           className="text-gray-400 hover:text-white"
+                          onClick={() => handleEditClick(student)}
                         >
                           Edit
                         </Button>
@@ -216,6 +301,47 @@ export function AdminDashboard() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Edit Attendance Modal */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Attendance</DialogTitle>
+            <DialogDescription>
+              Update the attendance status for{" "}
+              <span className="font-bold">
+                {selectedStudent?.name || "this student"}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium">Status</label>
+              <Select value={editStatus} onValueChange={setEditStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Present">Present</SelectItem>
+                  <SelectItem value="Absent">Absent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsEditModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleSaveEdit}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   )
 }
