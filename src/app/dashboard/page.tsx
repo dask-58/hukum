@@ -34,13 +34,11 @@ export default function DashboardPage() {
     return <AdminDashboard />
   }
 
-  // Helper: extract roll number from an email (e.g. "23bcs044@iiitdwd.ac.in" -> 44)
   const extractRollNo = (email: string): number | null => {
     const match = email.match(/23bcs0*(\d+)/i)
     return match ? parseInt(match[1]) : null
   }
 
-  // Fetch the student's attendance record from our dynamic API route
   useEffect(() => {
     const fetchAttendance = async () => {
       if (user && user.emailAddresses.length > 0) {
@@ -54,8 +52,6 @@ export default function DashboardPage() {
             console.error(data.error)
             return
           }
-          // Transform the record into an array similar to the expected attendanceData.
-          // We iterate over keys starting with "date_" and format them.
           const transformed = Object.entries(data)
             .filter(([key]) => key.startsWith("date_"))
             .map(([key, value], index) => ({
@@ -73,7 +69,6 @@ export default function DashboardPage() {
     fetchAttendance()
   }, [user])
 
-  // Compute overall stats, class stats and monthly overview based on fetched attendanceData
   const { overallStats, classStats, monthlyOverview } = useMemo(() => {
     const totalClasses = attendanceData.length
     const presentClasses = attendanceData.filter(record => record.status === "Present").length
@@ -114,7 +109,6 @@ export default function DashboardPage() {
     }
   }, [attendanceData, date])
 
-  // Compute classes to display based on either all data for the month or single selected date.
   const classesToDisplay = useMemo(() => {
     const currentDate = date || new Date()
     const monthDates = eachDayOfInterval({ start: startOfMonth(currentDate), end: endOfMonth(currentDate) })
@@ -441,3 +435,4 @@ export default function DashboardPage() {
     </TooltipProvider>
   )
 }
+
