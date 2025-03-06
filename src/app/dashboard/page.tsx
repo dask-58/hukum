@@ -223,9 +223,9 @@ export default function DashboardPage() {
     <TooltipProvider>
       <main className="max-w-[75rem] w-full mx-auto p-6 space-y-8">
         <div className="fade-in">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
-            Welcome, {user?.fullName || 'Guest'}
-          </h1>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
+            Hello, {user?.fullName?.replace(/ IIIT Dharwad$/, '') || 'Guest'}
+            </h1>
           <p className="text-gray-400">Track your class attendance</p>
         </div>
         <div className="stats-grid fade-in">
@@ -436,7 +436,7 @@ export default function DashboardPage() {
           <CardContent className="space-y-2">
             <p className="text-gray-400">• Weekend days (Saturday and Sunday) are automatically marked as holidays</p>
             <p className="text-gray-400">• "No Class" indicates no scheduled class for that course on that day</p>
-            <p className="text-gray-400">• Sample data used for demonstration purposes</p>
+            {/* <p className="text-gray-400">• Sample data used for demonstration purposes</p> */}
             <p className="text-gray-400">• Attendance percentage calculated based on recorded classes only</p>
           </CardContent>
         </Card>
