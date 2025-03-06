@@ -16,7 +16,6 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import FileUpload from "@/components/FileUpload"
 import { AdminDashboard } from "@/components/AdminDashboard"
 
-// List of classes for the schedule (adjust as needed)
 const allClasses = ["CS301 - Software Engineering"]
 
 export default function DashboardPage() {
@@ -25,14 +24,12 @@ export default function DashboardPage() {
   const [showAllData, setShowAllData] = useState(false)
   const [selectedClass, setSelectedClass] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
-  // This state will hold the transformed attendance data array
   const [attendanceData, setAttendanceData] = useState<any[]>([])
 
   const isAdmin = user?.emailAddresses.some(email => 
-    ["googldhruv@gmail.com", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
+    ["googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
   )
 
-  // If user is admin, render the AdminDashboard
   if (isAdmin) {
     return <AdminDashboard />
   }
