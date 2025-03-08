@@ -17,18 +17,37 @@ model Attendance {
   studentRollNo         Int               @id
   name                  String
 
-  date_2025_03_04       AttendanceStatus? 
+  date_2025_03_01       AttendanceStatus?
+  date_2025_03_02       AttendanceStatus?
+  date_2025_03_03       AttendanceStatus?
+  date_2025_03_04       AttendanceStatus?
   date_2025_03_05       AttendanceStatus?
   date_2025_03_06       AttendanceStatus?
-  date_2025_03_11       AttendanceStatus? 
+  date_2025_03_07       AttendanceStatus?
+  date_2025_03_08       AttendanceStatus?
+  date_2025_03_09       AttendanceStatus?
+  date_2025_03_10       AttendanceStatus?
+  date_2025_03_11       AttendanceStatus?
   date_2025_03_12       AttendanceStatus?
   date_2025_03_13       AttendanceStatus?
-  date_2025_03_18       AttendanceStatus? 
+  date_2025_03_14       AttendanceStatus?
+  date_2025_03_15       AttendanceStatus?
+  date_2025_03_16       AttendanceStatus?
+  date_2025_03_17       AttendanceStatus?
+  date_2025_03_18       AttendanceStatus?
   date_2025_03_19       AttendanceStatus?
   date_2025_03_20       AttendanceStatus?
-  date_2025_03_25       AttendanceStatus? 
+  date_2025_03_21       AttendanceStatus?
+  date_2025_03_22       AttendanceStatus?
+  date_2025_03_23       AttendanceStatus?
+  date_2025_03_24       AttendanceStatus?
+  date_2025_03_25       AttendanceStatus?
   date_2025_03_26       AttendanceStatus?
   date_2025_03_27       AttendanceStatus?
+  date_2025_03_28       AttendanceStatus?
+  date_2025_03_29       AttendanceStatus?
+  date_2025_03_30       AttendanceStatus?
+  date_2025_03_31       AttendanceStatus?
 
   attendancePercentage  Float?
 }
