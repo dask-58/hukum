@@ -141,26 +141,37 @@ export function AdminDashboard() {
     }
   }
 
-  // Updated function to trigger the Flask API route with inline UI feedback.
   const handleFlaskUpdate = async () => {
-    setFlaskUpdateStatus("loading")
+    setFlaskUpdateStatus("loading");
     try {
-      const response = await fetch("https://dask58.pythonanywhere.com/update_attendance")
+      const response = await fetch("https://dask58.pythonanywhere.com/update_attendance", {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      // Refresh the data regardless of the response status
+      await refreshData();
+      
       if (response.ok) {
-        setFlaskUpdateStatus("success")
+        setFlaskUpdateStatus("success");
       } else {
-        setFlaskUpdateStatus("error")
+        console.error("Flask API Error:", await response.text());
+        setFlaskUpdateStatus("error");
       }
     } catch (error) {
-      console.error("Error calling Flask API:", error)
-      setFlaskUpdateStatus("error")
+      console.error("Error calling Flask API:", error);
+      setFlaskUpdateStatus("error");
     } finally {
-      // Clear the message after 3 seconds
+      // Clear the message after 3 seconds and refresh the data again
       setTimeout(() => {
-        setFlaskUpdateStatus("idle")
-      }, 3000)
+        setFlaskUpdateStatus("idle");
+        refreshData();
+      }, 3000);
     }
-  }
+  };
+  
 
   return (
     <main className="max-w-[85rem] w-full mx-auto p-6 space-y-8">
@@ -246,7 +257,7 @@ export function AdminDashboard() {
               )}
               {flaskUpdateStatus === "error" && (
                 <span className="text-red-500 mt-1 text-sm">
-                  Error triggering Flask API.
+                  Error updating attendance!
                 </span>
               )}
             </div>
