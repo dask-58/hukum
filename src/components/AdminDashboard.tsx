@@ -30,8 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import FileUpload from "@/components/FileUpload"
-
-// Dialog components for the modal
 import {
   Dialog,
   DialogContent,
@@ -48,6 +46,14 @@ export function AdminDashboard() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [editStatus, setEditStatus] = useState<string>("Absent")
+  // New state to manage Flask API update status
+  // "idle": no update in progress,
+  // "loading": while the API call is being processed,
+  // "success": API call succeeded,
+  // "error": API call failed.
+  const [flaskUpdateStatus, setFlaskUpdateStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle")
 
   const refreshData = async () => {
     const response = await fetch("/api/attendance")
@@ -80,10 +86,7 @@ export function AdminDashboard() {
       ]
     })
 
-    // Combine header and rows into CSV content.
     const csvContent = [header, ...csvData].map((row) => row.join(",")).join("\n")
-
-    // Create a Blob and trigger the download.
     const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement("a")
@@ -106,7 +109,6 @@ export function AdminDashboard() {
     ).length,
   }
 
-  // Opens the edit modal and pre-populates the status based on the selected date.
   const handleEditClick = (student: any) => {
     setSelectedStudent(student)
     const currentStatus =
@@ -115,7 +117,6 @@ export function AdminDashboard() {
     setIsEditModalOpen(true)
   }
 
-  // Calls the update API and refreshes data.
   const handleSaveEdit = async () => {
     const formattedDate = format(date, "yyyy_MM_dd")
     try {
@@ -123,9 +124,9 @@ export function AdminDashboard() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          rollNo: selectedStudent.studentRollNo, // Note renamed key.
-          field: `date_${formattedDate}`,         // Field key instead of date.
-          newStatus: editStatus,                   // newStatus instead of status.
+          rollNo: selectedStudent.studentRollNo,
+          field: `date_${formattedDate}`,
+          newStatus: editStatus,
         }),
       })
       if (res.ok) {
@@ -137,6 +138,27 @@ export function AdminDashboard() {
       }
     } catch (error) {
       console.error("Error updating attendance:", error)
+    }
+  }
+
+  // Updated function to trigger the Flask API route with inline UI feedback.
+  const handleFlaskUpdate = async () => {
+    setFlaskUpdateStatus("loading")
+    try {
+      const response = await fetch("https://dask58.pythonanywhere.com/update_attendance")
+      if (response.ok) {
+        setFlaskUpdateStatus("success")
+      } else {
+        setFlaskUpdateStatus("error")
+      }
+    } catch (error) {
+      console.error("Error calling Flask API:", error)
+      setFlaskUpdateStatus("error")
+    } finally {
+      // Clear the message after 3 seconds
+      setTimeout(() => {
+        setFlaskUpdateStatus("idle")
+      }, 3000)
     }
   }
 
@@ -178,7 +200,7 @@ export function AdminDashboard() {
               View and manage class attendance
             </CardDescription>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <Button
               variant="outline"
               onClick={async () => {
@@ -200,6 +222,34 @@ export function AdminDashboard() {
               <DownloadIcon className="mr-2 h-4 w-4" />
               Export CSV
             </Button>
+            {/* Updated trigger button for the Flask API */}
+            <div className="flex flex-col items-center">
+              <Button
+                variant="outline"
+                onClick={handleFlaskUpdate}
+                disabled={flaskUpdateStatus === "loading"}
+                className="border-white/10 hover:bg-white/5 w-full md:w-auto"
+              >
+                {flaskUpdateStatus === "loading" ? (
+                  <>
+                    <RefreshCcw className="mr-2 h-4 w-4 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  "Trigger Update"
+                )}
+              </Button>
+              {flaskUpdateStatus === "success" && (
+                <span className="text-green-500 mt-1 text-sm">
+                  Attendance marked successfully!
+                </span>
+              )}
+              {flaskUpdateStatus === "error" && (
+                <span className="text-red-500 mt-1 text-sm">
+                  Error triggering Flask API.
+                </span>
+              )}
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -302,7 +352,6 @@ export function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Edit Attendance Modal */}
       <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
