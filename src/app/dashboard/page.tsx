@@ -22,9 +22,9 @@ export default function DashboardPage() {
   const { user, isSignedIn } = useUser()
   const [date, setDate] = useState<Date | undefined>(new Date())
   const [showAllData, setShowAllData] = useState(false)
-  const [selectedClass, setSelectedClass] = useState<string>("all")
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [attendanceData, setAttendanceData] = useState<any[]>([])
+  const [overallPercentage, setOverallPercentage] = useState<number>(0)
 
   const isAdmin = user?.emailAddresses.some(email => 
     ["googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
@@ -52,6 +52,8 @@ export default function DashboardPage() {
             console.error(data.error)
             return
           }
+          // Set overall percentage from the database column "attendancePercentage"
+          setOverallPercentage(data.attendancePercentage || 0)
           const transformed = Object.entries(data)
             .filter(([key]) => key.startsWith("date_"))
             .map(([key, value], index) => ({
@@ -69,19 +71,9 @@ export default function DashboardPage() {
     fetchAttendance()
   }, [user])
 
-  const { overallStats, classStats, monthlyOverview } = useMemo(() => {
+  const { overallStats, monthlyOverview } = useMemo(() => {
     const totalClasses = attendanceData.length
     const presentClasses = attendanceData.filter(record => record.status === "Present").length
-    const cStats = allClasses.map(className => {
-      const classRecords = attendanceData.filter(record => record.class === className)
-      const present = classRecords.filter(record => record.status === "Present").length
-      return {
-        className,
-        total: classRecords.length,
-        present,
-        percentage: classRecords.length > 0 ? (present / classRecords.length) * 100 : 0
-      }
-    })
 
     const currentDate = date || new Date()
     const monthStart = startOfMonth(currentDate)
@@ -102,12 +94,12 @@ export default function DashboardPage() {
       overallStats: {
         total: totalClasses,
         present: presentClasses,
-        percentage: totalClasses > 0 ? (presentClasses / totalClasses) * 100 : 0
+        // Use the overallPercentage provided by the database
+        percentage: overallPercentage
       },
-      classStats: cStats,
       monthlyOverview: mOverview
     }
-  }, [attendanceData, date])
+  }, [attendanceData, date, overallPercentage])
 
   const classesToDisplay = useMemo(() => {
     const currentDate = date || new Date()
@@ -167,11 +159,10 @@ export default function DashboardPage() {
     return classesToDisplay.map(dayData => ({
       ...dayData,
       classes: dayData.classes.filter(record => 
-        (selectedClass === 'all' || record.class === selectedClass) &&
-        (selectedStatus === 'all' || record.status === selectedStatus)
+        selectedStatus === 'all' || record.status === selectedStatus
       )
     })).filter(dayData => dayData.classes.length > 0)
-  }, [classesToDisplay, selectedClass, selectedStatus])
+  }, [classesToDisplay, selectedStatus])
 
   const exportToCSV = () => {
     const csvContent = [
@@ -284,25 +275,27 @@ export default function DashboardPage() {
           </Card>
           <Card className="glass-card stats-card">
             <CardHeader>
-              <CardTitle className="text-lg">Course Statistics</CardTitle>
+              <CardTitle className="text-lg">Attendance Breakdown</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {classStats.map((stat, index) => (
-                <div key={index}>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-gray-300 truncate max-w-[120px]">
-                      {stat.className}
-                    </span>
-                    <span className="text-white">
-                      {stat.percentage.toFixed(1)}%
-                    </span>
-                  </div>
-                  <Progress 
-                    value={stat.percentage} 
-                    className="h-2 bg-white/[0.1]" 
-                  />
-                </div>
-              ))}
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-300">Present</span>
+                <span className="text-white">
+                  {attendanceData.filter(record => record.status === "Present").length}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-300">Absent</span>
+                <span className="text-white">
+                  {attendanceData.filter(record => record.status === "Absent").length}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-gray-300">No Class</span>
+                <span className="text-white">
+                  {attendanceData.filter(record => record.status === "No Class").length}
+                </span>
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -435,4 +428,3 @@ export default function DashboardPage() {
     </TooltipProvider>
   )
 }
-
