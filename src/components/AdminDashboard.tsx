@@ -77,7 +77,7 @@ export function AdminDashboard() {
 
     const header = ["Roll Number", "Name", ...allDates, "Attendance Percentage"]
     const csvData = studentsData.map((student) => {
-      const rowStatuses = allDates.map((date) => student[date] || "Absent")
+      const rowStatuses = allDates.map((date) => student[date] ?? null)
       return [
         student.studentRollNo,
         student.name,
@@ -86,7 +86,9 @@ export function AdminDashboard() {
       ]
     })
 
-    const csvContent = [header, ...csvData].map((row) => row.join(",")).join("\n")
+    const csvContent = [header, ...csvData]
+      .map((row) => row.join(","))
+      .join("\n")
     const blob = new Blob([csvContent], { type: "text/csv" })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement("a")
