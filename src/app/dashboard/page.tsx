@@ -27,7 +27,7 @@ export default function DashboardPage() {
   const [overallPercentage, setOverallPercentage] = useState<number>(0)
 
   const isAdmin = user?.emailAddresses.some(email => 
-    ["googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
+    ["vivekraj@iiitdwd.ac.in","googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
   )
 
   if (isAdmin) {
@@ -52,7 +52,6 @@ export default function DashboardPage() {
             console.error(data.error)
             return
           }
-          // Set overall percentage from the database column "attendancePercentage"
           setOverallPercentage(data.attendancePercentage || 0)
           const transformed = Object.entries(data)
             .filter(([key]) => key.startsWith("date_"))
@@ -94,7 +93,6 @@ export default function DashboardPage() {
       overallStats: {
         total: totalClasses,
         present: presentClasses,
-        // Use the overallPercentage provided by the database
         percentage: overallPercentage
       },
       monthlyOverview: mOverview
