@@ -46,11 +46,6 @@ export function AdminDashboard() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null)
   const [isEditModalOpen, setIsEditModalOpen] = useState<boolean>(false)
   const [editStatus, setEditStatus] = useState<string>("Absent")
-  // New state to manage Flask API update status
-  // "idle": no update in progress,
-  // "loading": while the API call is being processed,
-  // "success": API call succeeded,
-  // "error": API call failed.
   const [flaskUpdateStatus, setFlaskUpdateStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle")
@@ -153,7 +148,6 @@ export function AdminDashboard() {
         },
       });
       
-      // Refresh the data regardless of the response status
       await refreshData();
       
       if (response.ok) {
@@ -166,7 +160,6 @@ export function AdminDashboard() {
       console.error("Error calling Flask API:", error);
       setFlaskUpdateStatus("error");
     } finally {
-      // Clear the message after 3 seconds and refresh the data again
       setTimeout(() => {
         setFlaskUpdateStatus("idle");
         refreshData();
