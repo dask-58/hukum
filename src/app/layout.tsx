@@ -56,7 +56,7 @@ export default function RootLayout({
         <head>
           <link rel="icon" href="/favicon.ico" sizes="any" />
         </head>
-        <body className={`${inter.className} antialiased`}> {/* Updated to use Inter */}
+        <body className={`${inter.className} antialiased`}> 
           <AuthWrapper>
             <Navbar />
             <main>

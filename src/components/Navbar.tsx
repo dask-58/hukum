@@ -4,6 +4,7 @@ import { Menu, X } from "lucide-react"
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs"
 import Link from "next/link"
 import { Button } from "./ui/button"
+import { Nav } from "react-day-picker"
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -41,6 +42,9 @@ const Navbar = () => {
               <SignedIn>
                 <NavLink href="/dashboard">Dashboard</NavLink>
               </SignedIn>
+              <SignedOut>
+                <NavLink href="/pricing">Pricing</NavLink>
+              </SignedOut>
             </div>
             <div className="flex items-center space-x-2 before:w-px before:h-6 before:bg-white/10 before:mr-2">
               <SignedIn>
