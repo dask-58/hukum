@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { format } from "date-fns"
 import {
   Card,
@@ -38,6 +38,14 @@ import {
   DialogFooter,
   DialogDescription,
 } from "@/components/ui/dialog"
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+  getFilteredRowModel,
+} from "@tanstack/react-table"
+import { Input } from "@/components/ui/input"
 
 export function AdminDashboard() {
   const [date, setDate] = useState<Date>(new Date())
@@ -49,6 +57,7 @@ export function AdminDashboard() {
   const [flaskUpdateStatus, setFlaskUpdateStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle")
+  const [globalFilter, setGlobalFilter] = useState("")
 
   const refreshData = async () => {
     const response = await fetch("/api/attendance")
@@ -139,34 +148,106 @@ export function AdminDashboard() {
   }
 
   const handleFlaskUpdate = async () => {
-    setFlaskUpdateStatus("loading");
+    setFlaskUpdateStatus("loading")
     try {
-      const response = await fetch("https://dask58.pythonanywhere.com/update_attendance", {
-        method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-        },
-      });
-      
-      await refreshData();
-      
+      const response = await fetch(
+        "https://dask58.pythonanywhere.com/update_attendance",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      )
+
+      await refreshData()
+
       if (response.ok) {
-        setFlaskUpdateStatus("success");
+        setFlaskUpdateStatus("success")
       } else {
-        console.error("Flask API Error:", await response.text());
-        setFlaskUpdateStatus("error");
+        console.error("Flask API Error:", await response.text())
+        setFlaskUpdateStatus("error")
       }
     } catch (error) {
-      console.error("Error calling Flask API:", error);
-      setFlaskUpdateStatus("error");
+      console.error("Error calling Flask API:", error)
+      setFlaskUpdateStatus("error")
     } finally {
       setTimeout(() => {
-        setFlaskUpdateStatus("idle");
-        refreshData();
-      }, 3000);
+        setFlaskUpdateStatus("idle")
+        refreshData()
+      }, 3000)
     }
-  };
-  
+  }
+
+  const columns = useMemo<ColumnDef<any>[]>(
+    () => [
+      {
+        accessorKey: "studentRollNo",
+        header: "Roll Number",
+        cell: ({ row }) => (
+          <div className="font-mono text-gray-300">{row.getValue("studentRollNo")}</div>
+        ),
+      },
+      {
+        accessorKey: "name",
+        header: "Name",
+        cell: ({ row }) => (
+          <div className="font-medium text-white">{row.getValue("name")}</div>
+        ),
+      },
+      {
+        id: "status",
+        header: "Status",
+        cell: ({ row }) => {
+          const student = row.original
+          const todayAttendance = student[`date_${format(date, "yyyy_MM_dd")}`]
+          return todayAttendance ? (
+            <Badge className={getStatusBadge(todayAttendance)}>
+              {todayAttendance}
+            </Badge>
+          ) : (
+            <Badge className="bg-gray-500/20 text-gray-200">Not Marked</Badge>
+          )
+        },
+      },
+      {
+        accessorKey: "attendancePercentage",
+        header: "Attendance Percentage",
+        cell: ({ row }) => (
+          <div className="text-gray-300">{row.getValue("attendancePercentage")}%</div>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const student = row.original
+          return (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-400 hover:text-white"
+              onClick={() => handleEditClick(student)}
+            >
+              Edit
+            </Button>
+          )
+        },
+      },
+    ],
+    [date, getStatusBadge, handleEditClick]
+  )
+
+  const table = useReactTable({
+    data: studentsData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      globalFilter,
+    },
+    onGlobalFilterChange: setGlobalFilter,
+  })
 
   return (
     <main className="max-w-[85rem] w-full mx-auto p-6 space-y-8">
@@ -202,9 +283,7 @@ export function AdminDashboard() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="space-y-1">
             <CardTitle>Attendance Records</CardTitle>
-            <CardDescription>
-              View and manage class attendance
-            </CardDescription>
+            <CardDescription>View and manage class attendance</CardDescription>
           </div>
           <div className="flex flex-wrap gap-2 items-center">
             <Button
@@ -290,65 +369,45 @@ export function AdminDashboard() {
                 <SelectItem value="Absent">Absent</SelectItem>
               </SelectContent>
             </Select>
+            <Input
+              type="text"
+              placeholder="Search by name or roll number..."
+              value={globalFilter}
+              onChange={(e) => setGlobalFilter(e.target.value)}
+              className="max-w-md border-white/10"
+            />
           </div>
           <div className="rounded-lg border border-white/10 overflow-hidden">
             <Table>
               <TableHeader>
-                <TableRow className="border-white/10 hover:bg-white/[0.02]">
-                  <TableHead className="text-gray-300">Roll Number</TableHead>
-                  <TableHead className="text-gray-300">Name</TableHead>
-                  <TableHead className="text-gray-300">Status</TableHead>
-                  <TableHead className="text-gray-300">
-                    Attendance Percentage
-                  </TableHead>
-                  <TableHead className="text-gray-300">Actions</TableHead>
-                </TableRow>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-white/10 hover:bg-white/[0.02]">
+                    {headerGroup.headers.map((header) => {
+                      return (
+                        <TableHead key={header.id} className="text-gray-300">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      )
+                    })}
+                  </TableRow>
+                ))}
               </TableHeader>
               <TableBody>
-                {studentsData.map((student) => {
-                  const todayAttendance =
-                    student[`date_${format(date, "yyyy_MM_dd")}`]
-                  if (
-                    selectedStatus !== "all" &&
-                    todayAttendance !== selectedStatus
-                  ) {
-                    return null
-                  }
+                {table.getRowModel().rows.map((row) => {
                   return (
-                    <TableRow
-                      key={student.studentRollNo}
-                      className="border-white/10 hover:bg-white/[0.02]"
-                    >
-                      <TableCell className="font-mono text-gray-300">
-                        {student.studentRollNo}
-                      </TableCell>
-                      <TableCell className="font-medium text-white">
-                        {student.name}
-                      </TableCell>
-                      <TableCell>
-                        {todayAttendance ? (
-                          <Badge className={getStatusBadge(todayAttendance)}>
-                            {todayAttendance}
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-gray-500/20 text-gray-200">
-                            Not Marked
-                          </Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-300">
-                        {student.attendancePercentage}%
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-gray-400 hover:text-white"
-                          onClick={() => handleEditClick(student)}
-                        >
-                          Edit
-                        </Button>
-                      </TableCell>
+                    <TableRow key={row.id} className="border-white/10 hover:bg-white/[0.02]">
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        )
+                      })}
                     </TableRow>
                   )
                 })}
