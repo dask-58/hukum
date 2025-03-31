@@ -3,7 +3,6 @@ import { useState, useMemo, useEffect } from "react"
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card"
 import { useUser } from "@clerk/nextjs"
 import { Button } from "@/components/ui/button"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isWeekend } from "date-fns"
@@ -15,6 +14,13 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { TooltipProvider } from "@/components/ui/tooltip"
 import FileUpload from "@/components/FileUpload"
 import { AdminDashboard } from "@/components/AdminDashboard"
+import {
+  useReactTable,
+  getCoreRowModel,
+  createColumnHelper,
+  flexRender,
+} from '@tanstack/react-table'
+import { Input } from "@/components/ui/input"
 
 const allClasses = ["CS301 - Software Engineering"]
 
@@ -25,6 +31,7 @@ export default function DashboardPage() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [attendanceData, setAttendanceData] = useState<any[]>([])
   const [overallPercentage, setOverallPercentage] = useState<number>(0)
+  const [searchName, setSearchName] = useState<string>("")
 
   const isAdmin = user?.emailAddresses.some(email => 
     ["vivekraj@iiitdwd.ac.in","googldhruv@gmail.com", "23bcs013@iiitdwd.ac.in", "23bcs028@iiitdwd.ac.in"].includes(email.emailAddress)
@@ -162,6 +169,50 @@ export default function DashboardPage() {
     })).filter(dayData => dayData.classes.length > 0)
   }, [classesToDisplay, selectedStatus])
 
+  // Flatten filteredData to build our table rows
+  const tableData = useMemo(() => {
+    return filteredData.flatMap(dayData =>
+      dayData.classes.map(rec => ({
+        date: dayData.date,
+        class: rec.class,
+        status: rec.status,
+      }))
+    ).filter(item => item.class.toLowerCase().includes(searchName.toLowerCase()))
+  }, [filteredData, searchName])
+
+  // TanStack Table columns setup
+  type RowData = {
+    date: string,
+    class: string,
+    status: string
+  }
+
+  const columnHelper = createColumnHelper<RowData>()
+
+  const columns = useMemo(() => [
+    columnHelper.accessor('date', {
+      header: 'Date',
+      cell: info => format(new Date(info.getValue()), "EEE, MMM d")
+    }),
+    columnHelper.accessor('class', {
+      header: 'Class',
+    }),
+    columnHelper.accessor('status', {
+      header: 'Status',
+      cell: info => (
+        <Badge className={getStatusBadge(info.getValue())}>
+          {info.getValue()}
+        </Badge>
+      ),
+    }),
+  ], [columnHelper])
+
+  const table = useReactTable({
+    data: tableData,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
+
   const exportToCSV = () => {
     const csvContent = [
       ['Date', 'Class', 'Status'],
@@ -203,9 +254,9 @@ export default function DashboardPage() {
     <TooltipProvider>
       <main className="max-w-[75rem] w-full mx-auto p-6 space-y-8">
         <div className="fade-in">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent mb-2">
             Hello, {user?.fullName?.replace(/ IIIT Dharwad$/, '') || 'Guest'}
-            </h1>
+          </h1>
           <p className="text-gray-400">Track your class attendance</p>
         </div>
         <div className="stats-grid fade-in">
@@ -360,51 +411,48 @@ export default function DashboardPage() {
                 {showAllData ? "Show Single Day" : "Show Full Month"}
               </Button>
             </div>
+
+            {/* Search Input */}
+            <Input
+              type="text"
+              placeholder="Search by class name..."
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              className="mb-4 border-white/10"
+            />
+
             <div className="rounded-lg border border-white/10 overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow className="border-white/10 hover:bg-white/[0.02]">
-                    <TableHead className="text-gray-300">Date</TableHead>
-                    <TableHead className="text-gray-300">Class</TableHead>
-                    <TableHead className="text-gray-300">Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredData.map((dayData) =>
-                    dayData.classes.map((record, index) => (
-                      <TableRow 
-                        key={`${dayData.date}-${record.class}`}
-                        className="border-white/10 hover:bg-white/[0.02]"
-                      >
-                        {index === 0 && (
-                          <TableCell 
-                            rowSpan={dayData.classes.length}
-                            className="text-gray-300"
-                          >
-                            {format(new Date(dayData.date), "EEE, MMM d")}
-                          </TableCell>
-                        )}
-                        <TableCell className="font-medium text-white">{record.class}</TableCell>
-                        <TableCell>
-                          <Badge className={getStatusBadge(record.status)}>
-                            {record.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                  {filteredData.length === 0 && (
-                    <TableRow>
-                      <TableCell 
-                        colSpan={4} 
-                        className="h-32 text-center text-gray-400"
-                      >
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-gray-800">
+                  {table.getHeaderGroups().map(headerGroup => (
+                    <tr key={headerGroup.id}>
+                      {headerGroup.headers.map(header => (
+                        <th key={header.id} className="p-3 border-b border-white/10">
+                          {flexRender(header.column.columnDef.header, header.getContext())}
+                        </th>
+                      ))}
+                    </tr>
+                  ))}
+                </thead>
+                <tbody>
+                  {table.getRowModel().rows.map(row => (
+                    <tr key={row.id} className="hover:bg-white/[0.02]">
+                      {row.getVisibleCells().map(cell => (
+                        <td key={cell.id} className="p-3 border-b border-white/10">
+                          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                  {tableData.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="h-32 text-center text-gray-400">
                         No records found
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
           </CardContent>
         </Card>
@@ -418,7 +466,6 @@ export default function DashboardPage() {
           <CardContent className="space-y-2">
             <p className="text-gray-400">• Weekend days (Saturday and Sunday) are automatically marked as holidays</p>
             <p className="text-gray-400">• "No Class" indicates no scheduled class for that course on that day</p>
-            {/* <p className="text-gray-400">• Sample data used for demonstration purposes</p> */}
             <p className="text-gray-400">• Attendance percentage calculated based on recorded classes only</p>
           </CardContent>
         </Card>
