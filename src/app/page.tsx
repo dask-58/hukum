@@ -1,13 +1,14 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Bot, Shield, Zap } from "lucide-react"
+import { ArrowRight, Bot, Shield, Zap, X } from "lucide-react"
 import gsap from "gsap"
 import Link from "next/link"
 
 export default function Home() {
+  const [showAnnouncement, setShowAnnouncement] = useState(true)
   const titleRef = useRef(null)
   const heroRef = useRef(null)
   const cardsRef = useRef<HTMLDivElement | null>(null)
@@ -74,6 +75,35 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-16 space-y-24">
+        {/* Announcement Banner */}
+        {showAnnouncement && (
+          <div className="mb-8 relative">
+            <Card className="bg-destructive text-white shadow-lg">
+              <CardContent className="text-center relative">
+                <button
+                  className="absolute top-2 right-2 text-white"
+                  aria-label="Close Announcement"
+                  onClick={() => setShowAnnouncement(false)}
+                >
+                  <X size={20} />
+                </button>
+                <h3 className="text-xl font-bold mb-2">Service Announcement</h3>
+                <p>
+                  We will be shutting down our service on <strong>April 7th</strong> due to lack of funds to run our ML model's server. If you would like to sponsor our efforts or support the project, please check out our{" "}
+                  <Link href="/pricing" className="underline">
+                    Pricing
+                  </Link>{" "}
+                  page to choose a plan, and contact us through our{" "}
+                  <Link href="/about" className="underline">
+                    About
+                  </Link>{" "}
+                  page.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         <div className="text-center space-y-12">
           <div ref={titleRef} className="w-full max-w-6xl mx-auto">
             <svg viewBox="0 0 1000 200" className="w-full h-auto min-h-[100px] md:min-h-[150px]">
@@ -82,8 +112,8 @@ export default function Home() {
                   <rect className="gradientBox" fill="url(#theGradient)" x="0" y="0" width="1000" height="200"/>
                 </mask>
                 <linearGradient id="theGradient" gradientUnits="userSpaceOnUse" x1="-1000" y1="100" x2="0" y2="100">
-                  <stop offset="0" style={{stopColor: "#fff"}}/>
-                  <stop offset="1" style={{stopColor: "#000"}}/>
+                  <stop offset="0" style={{ stopColor: "#fff" }}/>
+                  <stop offset="1" style={{ stopColor: "#000" }}/>
                 </linearGradient>
               </defs>
               <g mask="url(#masker)">
@@ -119,19 +149,19 @@ export default function Home() {
         <div ref={ctaRef} className="text-center space-y-8">
           <div className="max-w-2xl mx-auto space-y-4">
             <h2 className="text-3xl font-bold">Ready to Get Started?</h2>
-          <div className="flex justify-center">
-            <Button
-              size="lg"
-              className="group bg-blue-600 hover:bg-blue-700 transition-all duration-300"
-              asChild
-            >
-              <Link href="/sign-in" className="flex items-center text-white">
-                Try for FREE!
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                size="lg"
+                className="group bg-blue-600 hover:bg-blue-700 transition-all duration-300"
+                asChild
+              >
+                <Link href="/sign-in" className="flex items-center text-white">
+                  Try for FREE!
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                </Link>
+              </Button>
+            </div>
           </div>
-        </div>
         </div>
       </main>
     </div>
