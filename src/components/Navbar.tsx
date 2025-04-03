@@ -91,6 +91,9 @@ const Navbar = () => {
               <SignedIn>
                 <NavLink href="/dashboard">Dashboard</NavLink>
               </SignedIn>
+              <SignedOut>
+                <NavLink href="/pricing">Pricing</NavLink>
+              </SignedOut>
               <div className="pt-2 border-t border-white/10">
                 <SignedIn>
                   <div className="flex items-center space-x-3">
