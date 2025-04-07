@@ -89,13 +89,14 @@ export default function Home() {
                 </button>
                 <h3 className="text-xl font-bold mb-2">Service Announcement</h3>
                 <p>
-                  We will be shutting down our service on <strong>April 7th</strong> due to lack of funds to run our ML model's server. If you would like to sponsor our efforts or support the project, please check out our{" "}
+                  We have shut down our services which lasted from <strong>March 8th, 2025</strong> to <strong>April 7th, 2025</strong>. We did not want to shut down our platform, but a lack of funds to support our ML model's server made it impossible to continue. A big thanks to the most important people our users for providing us the opportunity to serve you.
+                  If you would like to support our future projects, please check out our{" "}
                   <Link href="/pricing" className="underline">
-                    Pricing
+                  Pricing
                   </Link>{" "}
-                  page to choose a plan, and contact us through our{" "}
+                  page and contact us through our{" "}
                   <Link href="/about" className="underline">
-                    About
+                  About
                   </Link>{" "}
                   page.
                 </p>
